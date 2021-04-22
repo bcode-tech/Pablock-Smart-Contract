@@ -13,17 +13,16 @@ import "./PablockToken.sol";
 
 contract PablockGSN is BaseRelayRecipient {
 
+    address public contractOwner;
 
     string public symbol = "PBGSN";
     string public description = "Pablock GSN";
     uint public decimals = 0;
 
-    mapping(address => uint) balances;
-
     event Transfer(address indexed _from, address indexed _to, uint256 _value);
 
     constructor(address forwarder) public {
-        balances[tx.origin] = 10000;
+        contratOwner = msg.sender;
         trustedForwarder = forwarder;
     }
 
@@ -51,12 +50,10 @@ contract PablockGSN is BaseRelayRecipient {
      * but for our sample, any user can mint some coins - but just once..
      */
     function mint() public {
-        require(!minted[_msgSender()], "already minted");
-        minted[_msgSender()] = true;
-        balances[_msgSender()] += 10000;
+     
     }
 
+
     function requestToken() public {
-        PablockToken(msg.sender).requestToken(msg.sender);
     }
 }

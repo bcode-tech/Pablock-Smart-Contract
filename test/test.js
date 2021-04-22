@@ -1,46 +1,76 @@
-// Import the contract
-const PablockGSN = artifacts.require("PablockGSN");
-const PablockToken = artifacts.require("PablockToken");
+var MetaCoin = artifacts.require('./MetaCoin.sol')
 
-// Entry point for tests
-// Accounts variable is an array with
-// all the ethereum accounts that have been generated
-// for test purposes
-contract("PablockToken", (accounts) => {
-  // Single test
-  // 1st parameter: test name
-  // 2nd parameter: testing function
-  it("very", async () => {
-    // Get the contract instance
-    // basically the same as
-    // web3.eth.contract(contractAbi).at(contractAddress)
-    // but wrapped in a container that uses promises
-    // instead of callbacks (like ethersjs)
-    const pablockGSN = await PablockToken.deployed();
-    const pablockToken = await PablockToken.deployed(10000);
-    // await testInstance.mint({ from: accounts[1] });
+contract('MetaCoin', function (accounts) {
+  it('should put 10000 MetaCoin in the first account', function () {
+    return MetaCoin.deployed().then(function (instance) {
+      return instance.balanceOf.call(accounts[0])
+    }).then(function (balance) {
+      assert.equal(balance.valueOf(), 10000, "10000 wasn't in the first account")
+    })
+  })
+  it('should call a function that depends on a linked library', function () {
+    var meta
+    var metaCoinBalance
+    var metaCoinEthBalance
 
-    let balance1 = await pablockGSN.balanceOf(accounts[1]);
+    return MetaCoin.deployed().then(function (instance) {
+      meta = instance
+      return meta.balanceOf.call(accounts[0])
+    }).then(function (outCoinBalance) {
+      metaCoinBalance = outCoinBalance.toNumber()
+      return meta.getBalanceInEth.call(accounts[0])
+    }).then(function (outCoinBalanceEth) {
+      metaCoinEthBalance = outCoinBalanceEth.toNumber()
+    }).then(function () {
+      assert.equal(
+        metaCoinEthBalance,
+        2 * metaCoinBalance,
+        'Library function returned unexpeced function, linkage may be broken'
+      )
+    })
+  })
 
-    // assert.equal(balance1.valueOf(), 10000, "10 wasn't in the second account");
+  it('should send coin correctly', function () {
+    var meta
 
-    // await testInstance.transfer(accounts[0], 10000, { from: accounts[1] });
+    //    Get initial balances of first and second account.
+    var accountOne = accounts[0]
+    var accountTwo = accounts[1]
 
-    let balance0 = await pablockGSN.balanceOf(accounts[0]);
+    var accountOneStartingBalance
+    var accountTwoStartingBalance
+    var accountOneEndingBalance
+    var accountTwoEndingBalance
 
-    // assert.equal(balance0.valueOf(), 20000, "10 wasn't in the first account");
+    var amount = 10
 
-    await pablockToken.requestToken(accounts[1]);
+    return MetaCoin.deployed().then(function (instance) {
+      meta = instance
+      return meta.balanceOf.call(accountOne)
+    }).then(function (balance) {
+      accountOneStartingBalance = balance.toNumber()
+      return meta.balanceOf.call(accountTwo)
+    }).then(function (balance) {
+      accountTwoStartingBalance = balance.toNumber()
+      return meta.transfer(accountTwo, amount, { from: accountOne })
+    }).then(function () {
+      return meta.balanceOf.call(accountOne)
+    }).then(function (balance) {
+      accountOneEndingBalance = balance.toNumber()
+      return meta.balanceOf.call(accountTwo)
+    }).then(function (balance) {
+      accountTwoEndingBalance = balance.toNumber()
 
-    let pablockBalance = await pablockToken.balanceOf(accounts[1]);
-
-    console.log(
-      // balance0.toString(),
-      // balance1.toString(),
-      pablockBalance.toString()
-    );
-    // console.log(ethBalance0.toString(), ethBalance1.toString());
-
-    // assert.equal(0, 0, "EVERYTHING ok");
-  });
-});
+      assert.equal(
+        accountOneEndingBalance,
+        accountOneStartingBalance - amount,
+        "Amount wasn't correctly taken from the sender"
+      )
+      assert.equal(
+        accountTwoEndingBalance,
+        accountTwoStartingBalance + amount,
+        "Amount wasn't correctly sent to the receiver"
+      )
+    })
+  })
+})
