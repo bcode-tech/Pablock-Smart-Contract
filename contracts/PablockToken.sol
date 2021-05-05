@@ -4,9 +4,9 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract PablockToken is  ERC20 {
 
-    address public contractOwner;
-    uint256 public maxSupply;
-    uint256 constant MAX_ALLOWANCE = 2^256 - 1;
+    address contractOwner;
+    uint256 maxSupply;
+    uint256 MAX_ALLOWANCE = 2^256 - 1;
 
     function byOwner() private {
         require(contractOwner == msg.sender, "Messager sender is not contract owner");
