@@ -3,24 +3,26 @@ pragma solidity ^0.6.2;
 
 import "./ConvertLib.sol";
 import "@opengsn/gsn/contracts/BaseRelayRecipient.sol";
+// import "./PablockToken.sol";
+
 
 // This is just a simple example of a coin-like contract.
 // It is not standards compatible and cannot be expected to talk to other
 // coin/token contracts. If you want to create a standards-compliant
 // token, see: https://github.com/ConsenSys/Tokens. Cheers!
 
-contract MetaCoin is BaseRelayRecipient {
+contract PablockGSN is BaseRelayRecipient {
 
-    string public symbol = "META";
-    string public description = "GSN Sample MetaCoin";
+    address public contractOwner;
+
+    string public symbol = "PBGSN";
+    string public description = "Pablock GSN";
     uint public decimals = 0;
-
-    mapping(address => uint) balances;
 
     event Transfer(address indexed _from, address indexed _to, uint256 _value);
 
     constructor(address forwarder) public {
-        balances[tx.origin] = 10000;
+        contratOwner = msg.sender;
         trustedForwarder = forwarder;
     }
 
@@ -29,15 +31,10 @@ contract MetaCoin is BaseRelayRecipient {
     }
 
     function transfer(address receiver, uint amount) public returns (bool sufficient) {
-        if (balances[_msgSender()] < amount) return false;
-        balances[_msgSender()] -= amount;
-        balances[receiver] += amount;
-        emit Transfer(_msgSender(), receiver, amount);
-        return true;
-    }
-
-    function getBalanceInEth(address addr) public view returns (uint){
-        return ConvertLib.convert(balanceOf(addr), 2);
+        
+        if(PablockToken(msg.sender).balanceOf(msg.sender) < amount) return false;
+        PablockToken(msg.sender).transferFrom(msg.sender, receiver, amount);
+       
     }
 
     function balanceOf(address addr) public view returns (uint) {
@@ -53,8 +50,10 @@ contract MetaCoin is BaseRelayRecipient {
      * but for our sample, any user can mint some coins - but just once..
      */
     function mint() public {
-        require(!minted[_msgSender()], "already minted");
-        minted[_msgSender()] = true;
-        balances[_msgSender()] += 10000;
+     
+    }
+
+
+    function requestToken() public {
     }
 }
