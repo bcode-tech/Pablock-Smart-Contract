@@ -1,42 +1,49 @@
-pragma solidity ^0.6.2;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.7.4;
 
 import "./PablockToken.sol";
 
 contract PablockMultiSignNotarization {
+    PablockToken pablockToken;
 
-    struct Signer {
-        address signer;
-        bool signed;
-    }
-    
-    bytes32  hash;
-    Signer[]  signers;
-    string  uri;
-    uint256  expirationDate;
+    mapping(address => bool) private signers;
 
-    
-    constructor (bytes32 hash, address[] signers, string uri, uint256 expirationDate ) {
-        this.hash = hash;
-       
-        this.uri = uri;
-        this.expirationDate = expirationDate;
+    bytes32 hash;
+    string uri;
+    uint256 expirationDate;
 
-        for (uint i = 0; i < signers.length; i++) {
-            this.signers[signers[i]] = Signer(signers[i], false);
+    constructor(
+        bytes32 _hash,
+        address[] memory _signers,
+        string memory _uri,
+        uint256 _expirationDate
+    ) {
+        hash = _hash;
+        uri = _uri;
+        expirationDate = _expirationDate;
+
+        for (uint256 i = 0; i < _signers.length; i++) {
+            signers[_signers[i]] = false;
         }
     }
-    
 
     function signDocument() public {
-        require(signers[msg.sender].exists, "Signers does not exists");
+        // require(signers[msg.sender].exists, "Signers does not exists");
 
-        PablockToken.receiveAndBurn(1);
+        pablockToken.receiveAndBurn(1);
 
-        this.signers[msg.sender].signed = true;
+        signers[msg.sender] = true;
     }
 
-    function getNotarizationData() public returns (address, Signer[], string, uint256) {
-        return (this.hash, this.signers, this.uri, this.expirationDate);
+    function getNotarizationData()
+        public
+        returns (
+            bytes32,
+            // address[] memory,
+            string memory,
+            uint256
+        )
+    {
+        return (hash, uri, expirationDate);
     }
-
 }

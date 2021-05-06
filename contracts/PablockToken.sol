@@ -1,24 +1,28 @@
-pragma solidity ^0.6.2;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.7.4;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-contract PablockToken is  ERC20 {
-
+contract PablockToken is ERC20 {
     address contractOwner;
     uint256 maxSupply;
-    uint256 MAX_ALLOWANCE = 2^256 - 1;
+    uint256 MAX_ALLOWANCE = 2 ^ (256 - 1);
 
-    function byOwner() private {
-        require(contractOwner == msg.sender, "Messager sender is not contract owner");
+    modifier byOwner() {
+        //require(contractOwner == msg.sender, "Messager sender is not contract owner");
+        if (contractOwner == msg.sender) _;
     }
-            
-    constructor (uint256 maxSupply) public ERC20("PablockToken", "PTK") {
+
+    constructor(uint256 _maxSupply) ERC20("PablockToken", "PTK") {
         contractOwner = msg.sender;
-        this.maxSupply = maxSupply;
+        maxSupply = _maxSupply;
     }
 
     function requestToken(address to, uint256 mintQuantity) public byOwner {
-        require(this.maxSupply >= totalSupply() + mintQuantity , "Would exceed max supply");
+        require(
+            maxSupply >= totalSupply() + mintQuantity,
+            "Would exceed max supply"
+        );
         _mint(to, mintQuantity);
     }
 
