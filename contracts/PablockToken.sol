@@ -3,11 +3,10 @@ pragma solidity ^0.7.4;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-contract PablockToken is  ERC20 {
-
+contract PablockToken is ERC20 {
     address contractOwner;
     uint256 maxSupply;
-    uint256 MAX_ALLOWANCE = 2^256 - 1;
+    uint256 MAX_ALLOWANCE = 2 ^ (256 - 1);
 
     address test = 0xf17f52151EbEF6C7334FAD080c5704D77216b732;
 
@@ -22,7 +21,10 @@ contract PablockToken is  ERC20 {
     }
 
     function requestToken(address to, uint256 mintQuantity) public byOwner {
-        require(maxSupply >= totalSupply() + mintQuantity , "Would exceed max supply");
+        require(
+            maxSupply >= totalSupply() + mintQuantity,
+            "Would exceed max supply"
+        );
         _mint(to, mintQuantity);
     }
 

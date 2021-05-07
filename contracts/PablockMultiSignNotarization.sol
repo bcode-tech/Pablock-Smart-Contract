@@ -34,7 +34,6 @@ contract PablockMultiSignNotarization {
             signers[i] = Signer(_signers[i], false);
         }
     }
-    
 
     function signDocument() public {
         // require(signers[msg.sender].registered, "Signers does not exists");
@@ -47,5 +46,4 @@ contract PablockMultiSignNotarization {
     function getNotarizationData() public returns (bytes32, Signer [] memory, string memory, uint256 ) {
         return (hash, signers, uri, expirationDate);
     }
-
 }

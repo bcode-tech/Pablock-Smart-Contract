@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: MIT
-
 pragma solidity ^0.7.4;
 
 import "./PablockMultiSignNotarization.sol";
@@ -17,10 +16,15 @@ contract PablockMultiSignFactory {
         
         pablockToken.receiveAndBurn(2, msg.sender);
 
-        PablockMultiSignNotarization _multiSign = new PablockMultiSignNotarization(hash, signers, uri, expirationDate);
+        PablockMultiSignNotarization _multiSign =
+            new PablockMultiSignNotarization(
+                hash,
+                signers,
+                uri,
+                expirationDate
+            );
         emit NewPablockMultiSignNotarization(address(_multiSign));
 
         return _multiSign;
-   }
-    
+    }
 }

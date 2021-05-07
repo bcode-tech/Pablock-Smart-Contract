@@ -1,5 +1,8 @@
 // SPDX-License-Identifier: MIT
+<<<<<<< HEAD
 
+=======
+>>>>>>> 9235bf0f39914eac96f7f3538708d1459ed2fb06
 pragma solidity ^0.7.4;
 
 import "./PablockToken.sol";
@@ -17,5 +20,4 @@ contract PablockNotarization {
         emit Notarize(hash, uri);
 
     }
-    
 }
