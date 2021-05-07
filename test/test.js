@@ -1,76 +1,49 @@
-var MetaCoin = artifacts.require('./MetaCoin.sol')
+const truffleAssert = require("truffle-assertions");
 
-contract('MetaCoin', function (accounts) {
-  it('should put 10000 MetaCoin in the first account', function () {
-    return MetaCoin.deployed().then(function (instance) {
-      return instance.balanceOf.call(accounts[0])
-    }).then(function (balance) {
-      assert.equal(balance.valueOf(), 10000, "10000 wasn't in the first account")
-    })
-  })
-  it('should call a function that depends on a linked library', function () {
-    var meta
-    var metaCoinBalance
-    var metaCoinEthBalance
+var PablockToken = artifacts.require("./PablockToken.sol");
+var PablockNotarization = artifacts.require("./PablockNotarization.sol");
 
-    return MetaCoin.deployed().then(function (instance) {
-      meta = instance
-      return meta.balanceOf.call(accounts[0])
-    }).then(function (outCoinBalance) {
-      metaCoinBalance = outCoinBalance.toNumber()
-      return meta.getBalanceInEth.call(accounts[0])
-    }).then(function (outCoinBalanceEth) {
-      metaCoinEthBalance = outCoinBalanceEth.toNumber()
-    }).then(function () {
-      assert.equal(
-        metaCoinEthBalance,
-        2 * metaCoinBalance,
-        'Library function returned unexpeced function, linkage may be broken'
-      )
-    })
-  })
+contract("PablockToken", function (accounts) {
+  it("should have 3 token", function () {
+    return PablockToken.deployed(10000)
+      .then(async function (instance) {
+        await instance.requestToken(accounts[1], 3);
 
-  it('should send coin correctly', function () {
-    var meta
+        return instance.balanceOf(accounts[1]);
+      })
+      .then(function (balance) {
+        assert.equal(balance.toString(), "3", "3 wasn't in the second account");
+      });
+  });
+  // it("should have 2 token", function () {
+  //   return PablockToken.deployed(10000)
+  //     .then(async function (instance) {
+  //       // await instance.requestToken(accounts[1], 3);
+  //       console.log("ACCOUNTS ==>", accounts[1]);
+  //       await instance.receiveAndBurn(1, accounts[1], { from: accounts[1] });
 
-    //    Get initial balances of first and second account.
-    var accountOne = accounts[0]
-    var accountTwo = accounts[1]
+  //       return instance.balanceOf(accounts[1]);
+  //     })
+  //     .then(function (balance) {
+  //       assert.equal(balance.toString(), "2", "2 wasn't in the second account");
+  //     });
+  // });
+  it("should notarize", function () {
+    return PablockNotarization.deployed()
+      .then(async function (instance) {
+        let tx = await instance.notarize(
+          "0xb133a0c0e9bee3be20163d2ad31d6248db292aa6dcb1ee087a2aa50e0fc75ae2",
+          "QmQHbDKtR6kp48Jzh2VGoC9VATX5QWASXejAg4ZiyhYbaB",
+          { from: accounts[1] }
+        );
+        return instance.balanceOf(accounts[1]);
+      })
+      .then(function (balance) {
+        assert.equal(balance.toString(), "2", "3 wasn't in the second account");
 
-    var accountOneStartingBalance
-    var accountTwoStartingBalance
-    var accountOneEndingBalance
-    var accountTwoEndingBalance
-
-    var amount = 10
-
-    return MetaCoin.deployed().then(function (instance) {
-      meta = instance
-      return meta.balanceOf.call(accountOne)
-    }).then(function (balance) {
-      accountOneStartingBalance = balance.toNumber()
-      return meta.balanceOf.call(accountTwo)
-    }).then(function (balance) {
-      accountTwoStartingBalance = balance.toNumber()
-      return meta.transfer(accountTwo, amount, { from: accountOne })
-    }).then(function () {
-      return meta.balanceOf.call(accountOne)
-    }).then(function (balance) {
-      accountOneEndingBalance = balance.toNumber()
-      return meta.balanceOf.call(accountTwo)
-    }).then(function (balance) {
-      accountTwoEndingBalance = balance.toNumber()
-
-      assert.equal(
-        accountOneEndingBalance,
-        accountOneStartingBalance - amount,
-        "Amount wasn't correctly taken from the sender"
-      )
-      assert.equal(
-        accountTwoEndingBalance,
-        accountTwoStartingBalance + amount,
-        "Amount wasn't correctly sent to the receiver"
-      )
-    })
-  })
-})
+        // truffleAssert.eventEmitted(result, "TestEvent", (ev) => {
+        //   return ev.param1 === 10 && ev.param2 === ev.param3;
+        // });
+      });
+  });
+});

@@ -1,17 +1,21 @@
-pragma solidity ^0.6.2;
+// SPDX-License-Identifier: MIT
+
+pragma solidity ^0.7.4;
 
 import "./PablockMultiSignNotarization.sol";
 import "./PablockToken.sol";
 
 contract PablockMultiSignFactory {
-    
 
-event NewPablockMultiSignNotarization(address multiSignAddress);
+   PablockToken pablockToken;
+   
+
+   event NewPablockMultiSignNotarization(address multiSignAddress);
 
     
-   function createNewMultiSignNotarization(bytes32 hash, address[] signers, string uri, uint256 expirationDate) public returns (PablockMultiSignNotarization){
+   function createNewMultiSignNotarization(bytes32 hash, address[] memory signers, string memory uri, uint256 expirationDate) public returns (PablockMultiSignNotarization){
         
-        PablockToken.receiveAndBurn(2);
+        pablockToken.receiveAndBurn(2, msg.sender);
 
         PablockMultiSignNotarization _multiSign = new PablockMultiSignNotarization(hash, signers, uri, expirationDate);
         emit NewPablockMultiSignNotarization(address(_multiSign));

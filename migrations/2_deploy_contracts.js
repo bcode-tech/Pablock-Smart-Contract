@@ -18,13 +18,13 @@
 /* global */
 const PablockToken = artifacts.require("PablockToken.sol");
 const PablockNotarization = artifacts.require("PablockNotarization.sol");
-const PablockMultiSignFactory = artifacts.require(
-  "PablockMultiSignFactory.sol"
-);
+// const PablockMultiSignFactory = artifacts.require(
+//   "PablockMultiSignFactory.sol"
+// );
 
 module.exports = async function deployFunc(deployer, network) {
   await deployer.deploy(PablockToken, 1000000000);
   await deployer.deploy(PablockNotarization);
-  await deployer.deploy(PablockMultiSignFactory);
+  // await deployer.deploy(PablockMultiSignFactory);
   console.log("Finished 2/3 migrations files");
 };
