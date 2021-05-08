@@ -33,8 +33,6 @@ contract PablockToken is ERC20 {
     }
 
     function receiveAndBurn(uint256 amount, address addr) public {
-        // require(test == msg.sender, "Msg sender different");
-
         _burn(addr, amount);
     }
 }

@@ -31,12 +31,14 @@ contract("PablockToken", function (accounts) {
   it("should notarize", function () {
     return PablockNotarization.deployed()
       .then(async function (instance) {
+        let pablockToken = await PablockToken.deployed();
         let tx = await instance.notarize(
           "0xb133a0c0e9bee3be20163d2ad31d6248db292aa6dcb1ee087a2aa50e0fc75ae2",
           "QmQHbDKtR6kp48Jzh2VGoC9VATX5QWASXejAg4ZiyhYbaB",
+          pablockToken.address,
           { from: accounts[1] }
         );
-        return instance.balanceOf(accounts[1]);
+        return pablockToken.balanceOf(accounts[1]);
       })
       .then(function (balance) {
         assert.equal(balance.toString(), "2", "3 wasn't in the second account");
