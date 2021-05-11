@@ -5,15 +5,33 @@ import "./PablockToken.sol";
 
 contract PablockNotarization {
 
-    PablockToken private pablockToken;
+    address private pablockTokenAddress;
+    address private contractOwner;
 
     event Notarize(bytes32 hash, string uri);
-    
-    function notarize(bytes32 hash, string memory uri, address contractAddr) public {
 
-        PablockToken(contractAddr).receiveAndBurn(1, msg.sender);
+    constructor() {
+        contractOwner = msg.sender;
+    }
+
+    modifier byOwner {
+        require(contractOwner == msg.sender, "Not allowed");
+        _;
+    }
+
+    modifier initialized {
+        require(pablockTokenAddress != address(0), "Contract not initialized");
+        _;
+    }
+
+    function initialize (address contractAddr) public byOwner {
+        pablockTokenAddress = contractAddr;
+    }
+    
+    function notarize(bytes32 hash, string memory uri) public initialized {
+
+        PablockToken(pablockTokenAddress).receiveAndBurn(1, msg.sender);
 
         emit Notarize(hash, uri);
-
     }
 }
