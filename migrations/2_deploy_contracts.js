@@ -24,10 +24,14 @@ const PablockNFT = artifacts.require("PablockNFT.sol");
 // );
 
 module.exports = async function deployFunc(deployer, network) {
-  await deployer.deploy(PablockToken, 1000000000).then(async (res) => {
-    // await deployer.deploy(PablockNotarization);
-    await deployer.deploy(PablockNFT, res.address);
-  });
+  // await deployer.deploy(PablockToken, 1000000000).then(async (res) => {
+  //   // await deployer.deploy(PablockNotarization);
+  //   await deployer.deploy(PablockNFT, res.address);
+  // });
+  await deployer.deploy(
+    PablockNFT,
+    "0x0C7229f982a199A0A2b0Bacb450Eb2F6e92981f8"
+  );
 
   // await deployer.deploy(PablockMultiSignFactory);
   console.log("Finished 2/3 migrations files");
