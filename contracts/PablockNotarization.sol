@@ -10,8 +10,9 @@ contract PablockNotarization {
 
     event Notarize(bytes32 hash, string uri);
 
-    constructor() {
+    constructor(address _pablockToken) {
         contractOwner = msg.sender;
+        pablockTokenAddress = _pablockToken;
     }
 
     modifier byOwner {

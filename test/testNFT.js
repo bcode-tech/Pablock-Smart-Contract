@@ -1,5 +1,5 @@
 var PablockToken = artifacts.require("./PablockToken.sol");
-var PablockNFT = artifacts.require("./PablockNFT.sol");
+var PablockNFT = artifacts.require("./PablockNFT721.sol");
 
 contract("PablockToken", function (accounts) {
   it("should have 3 token", function () {

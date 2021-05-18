@@ -8,8 +8,6 @@ contract PablockToken is ERC20 {
     uint256 maxSupply;
     uint256 MAX_ALLOWANCE = 2 ^ (256 - 1);
 
-    address test = 0xf17f52151EbEF6C7334FAD080c5704D77216b732;
-
     modifier byOwner(){
         require(contractOwner == msg.sender, "Not allowed");
         _;
@@ -26,6 +24,10 @@ contract PablockToken is ERC20 {
             "Would exceed max supply"
         );
         _mint(to, mintQuantity);
+    }
+
+    function changeOwner(address _newOwner) public byOwner {
+        contractOwner = _newOwner;
     }
 
     function unlimitedApprove() external {

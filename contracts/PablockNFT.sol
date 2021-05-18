@@ -1,26 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.7.4;
 
-import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "./PablockToken.sol";
 
-contract PablockNFT is ERC1155 {
-
-    struct Token{
-        string name;
-        string symbol;
-        uint256 maxSupply;
-        address creator;
-    }
-
-    mapping(uint256 => Token) public tokensData;
+contract PablockNFT is ERC721 {
     
     address private contractOwner;
     address private pablockTokenAddress;
     uint256 private counter;
     
 
-    constructor(address _contractAddr) ERC1155(""){
+    constructor(string memory _tokenName, string memory _tokenSymbol, address _contractAddr) ERC721(_tokenName, _tokenSymbol){
         counter = 0;
         pablockTokenAddress = _contractAddr;
         contractOwner = msg.sender;
@@ -40,16 +31,20 @@ contract PablockNFT is ERC1155 {
         pablockTokenAddress = contractAddr;
     }
 
-    function generateToken(string memory _name, string memory _symbol, uint256 _maxSupply, string memory _uri) public initialized returns (uint256 id){
+    function generateToken(uint256 _quantity, string memory _uri) public initialized returns (uint[] memory) {
 
-        PablockToken(pablockTokenAddress).receiveAndBurn(_maxSupply, msg.sender);
+        PablockToken(pablockTokenAddress).receiveAndBurn(_quantity, msg.sender);
 
-        _mint(msg.sender, counter, _maxSupply, bytes(_uri));
+        uint[] memory indexes;
 
-        tokensData[counter] = Token(_name, _symbol, _maxSupply, msg.sender);
-        counter++;
+        for(uint i = 0; i < _quantity; i++ ){
+            _safeMint(msg.sender, counter);
+            _setTokenURI(counter, _uri);
+            indexes[i] = counter;
+            counter++;
+        }
 
-        return counter;
+        return indexes;
 
     }
 
