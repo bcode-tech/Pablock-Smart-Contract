@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MIT
 
-
 pragma solidity ^0.7.4;
 
 import "./PablockToken.sol";
@@ -9,7 +8,7 @@ pragma experimental ABIEncoderV2;
 contract PablockMultiSignNotarization {
 
 
-    PablockToken pablockToken;
+    address private pablockTokenAddress;
 
     struct Signer {
         address addr;
@@ -24,9 +23,9 @@ contract PablockMultiSignNotarization {
     Signer[] private signers;
 
     
-    constructor (bytes32 _hash, address[] memory _signers, string memory _uri, uint256 _expirationDate ) {
+    constructor (bytes32 _hash, address[] memory _signers, string memory _uri, uint256 _expirationDate, address _pablockTokenAddress ) {
         hash = _hash;
-       
+        pablockTokenAddress = _pablockTokenAddress;
         uri = _uri;
         expirationDate = _expirationDate;
 
@@ -38,7 +37,7 @@ contract PablockMultiSignNotarization {
     function signDocument() public {
         // require(signers[msg.sender].registered, "Signers does not exists");
 
-        pablockToken.receiveAndBurn(1, msg.sender);
+        PablockToken(pablockTokenAddress).receiveAndBurn(1, msg.sender);
 
         // signers[msg.sender].signed = true;
     }

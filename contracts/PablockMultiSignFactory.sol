@@ -6,22 +6,24 @@ import "./PablockToken.sol";
 
 contract PablockMultiSignFactory {
 
-   PablockToken pablockToken;
+   address private pablockTokenAddress;
    
-
    event NewPablockMultiSignNotarization(address multiSignAddress);
 
+   constructor(address _pablockTokenAddress){
+       pablockTokenAddress = _pablockTokenAddress;
+   }
     
    function createNewMultiSignNotarization(bytes32 hash, address[] memory signers, string memory uri, uint256 expirationDate) public returns (PablockMultiSignNotarization){
         
-        pablockToken.receiveAndBurn(2, msg.sender);
+        PablockToken(pablockTokenAddress).receiveAndBurn(2, msg.sender);
 
         PablockMultiSignNotarization _multiSign =
             new PablockMultiSignNotarization(
                 hash,
                 signers,
                 uri,
-                expirationDate
+                expirationDate, pablockTokenAddress
             );
         emit NewPablockMultiSignNotarization(address(_multiSign));
 

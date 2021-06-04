@@ -9,7 +9,8 @@ contract PablockNFT is ERC721 {
     address private contractOwner;
     address private pablockTokenAddress;
     uint256 private counter;
-    
+
+    event TokenGeneration(address indexed from, string indexed uri, uint[] indexes) ;
 
     constructor(string memory _tokenName, string memory _tokenSymbol, address _contractAddr) ERC721(_tokenName, _tokenSymbol){
         counter = 0;
@@ -17,7 +18,7 @@ contract PablockNFT is ERC721 {
         contractOwner = msg.sender;
     }
 
-      modifier byOwner(){
+    modifier byOwner(){
         require(contractOwner == msg.sender, "Not allowed");
         _;
     }
@@ -31,21 +32,22 @@ contract PablockNFT is ERC721 {
         pablockTokenAddress = contractAddr;
     }
 
-    function generateToken(uint256 _quantity, string memory _uri) public initialized returns (uint[] memory) {
+    function generateToken(uint quantity, string memory _uri) public initialized {
 
-        PablockToken(pablockTokenAddress).receiveAndBurn(_quantity, msg.sender);
+        PablockToken(pablockTokenAddress).receiveAndBurn(quantity, msg.sender);
 
-        uint[] memory indexes;
+        uint[] memory indexes = new uint[](quantity);
 
-        for(uint i = 0; i < _quantity; i++ ){
+        // uint[quantity] memory indexes;
+
+        for(uint i = 0; i < quantity; i++ ){
             _safeMint(msg.sender, counter);
             _setTokenURI(counter, _uri);
             indexes[i] = counter;
             counter++;
         }
 
-        return indexes;
-
+        emit TokenGeneration(msg.sender, _uri, indexes);
     }
 
 }
