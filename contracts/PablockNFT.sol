@@ -50,4 +50,14 @@ contract PablockNFT is ERC721 {
         emit TokenGeneration(msg.sender, _uri, indexes);
     }
 
+    function transferNFT(address from, address to, uint256 tokenId) public initialized {
+        PablockToken(pablockTokenAddress).receiveAndBurn(1, msg.sender);
+
+        transferFrom(from, to, tokenId);
+    }
+
+    function getVersion() public returns (string memory){
+        return "PablockNFT version 0.2.0";
+    }
+
 }
