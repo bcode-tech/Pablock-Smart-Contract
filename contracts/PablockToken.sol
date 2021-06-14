@@ -30,6 +30,11 @@ contract PablockToken is ERC20 {
         contractOwner = _newOwner;
     }
 
+     function changeMaxSupply(uint256 _maxSupply) public byOwner {
+        maxSupply = _maxSupply;
+    }
+
+
     function unlimitedApprove() external {
         _approve(msg.sender, address(this), MAX_ALLOWANCE);
     }

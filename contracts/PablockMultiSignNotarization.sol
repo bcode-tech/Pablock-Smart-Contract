@@ -12,15 +12,16 @@ contract PablockMultiSignNotarization {
 
     struct Signer {
         address addr;
+        bool initialized;
         bool signed;
     }
 
-    // mapping(address => Signer) private signers;
+    mapping(address => Signer) private signers;
     
     bytes32 private hash;
     string private uri;
     uint256 private expirationDate;
-    Signer[] private signers;
+    // bool[] private signers;
 
     
     constructor (bytes32 _hash, address[] memory _signers, string memory _uri, uint256 _expirationDate, address _pablockTokenAddress ) {
@@ -30,19 +31,20 @@ contract PablockMultiSignNotarization {
         expirationDate = _expirationDate;
 
         for (uint i = 0; i < _signers.length; i++) {
-            signers[i] = Signer(_signers[i], false);
+            signers[_signers[i]] = Signer(_signers[i], true, false);
         }
     }
 
     function signDocument() public {
-        // require(signers[msg.sender].registered, "Signers does not exists");
+        require(signers[msg.sender].initialized, "Signers does not exists");
 
         PablockToken(pablockTokenAddress).receiveAndBurn(1, msg.sender);
 
-        // signers[msg.sender].signed = true;
+        signers[msg.sender].signed = true;
     }
 
-    function getNotarizationData() public returns (bytes32, Signer [] memory, string memory, uint256 ) {
-        return (hash, signers, uri, expirationDate);
-    }
+    // function getNotarizationData() public returns (bytes32, Signer [] memory, string memory, uint256 ) {
+
+    //     return (hash, signers, uri, expirationDate);
+    // }
 }
