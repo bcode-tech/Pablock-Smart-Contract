@@ -14,7 +14,7 @@ contract PablockMultiSignFactory {
        pablockTokenAddress = _pablockTokenAddress;
    }
     
-   function createNewMultiSignNotarization(bytes32 hash, address[] memory signers, string memory uri, uint256 expirationDate) public returns (PablockMultiSignNotarization){
+   function createNewMultiSignNotarization(bytes32 hash, address[] memory signers, string memory uri, uint256 expirationDate) public {//returns (PablockMultiSignNotarization){
         
         PablockToken(pablockTokenAddress).receiveAndBurn(2, msg.sender);
 
@@ -23,10 +23,11 @@ contract PablockMultiSignFactory {
                 hash,
                 signers,
                 uri,
-                expirationDate, pablockTokenAddress
+                expirationDate, 
+                pablockTokenAddress
             );
         emit NewPablockMultiSignNotarization(address(_multiSign));
 
-        return _multiSign;
+        // return _multiSign;
     }
 }

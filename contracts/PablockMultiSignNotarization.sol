@@ -24,11 +24,11 @@ contract PablockMultiSignNotarization {
     // bool[] private signers;
 
     
-    constructor (bytes32 _hash, address[] memory _signers, string memory _uri, uint256 _expirationDate, address _pablockTokenAddress ) {
+    constructor (bytes32 _hash, address[] memory _signers, string memory _uri, uint256 _expirationDate, address _pablockTokenAddress ) public {
         hash = _hash;
         pablockTokenAddress = _pablockTokenAddress;
         uri = _uri;
-        expirationDate = _expirationDate;
+        // expirationDate = _expirationDate;
 
         for (uint i = 0; i < _signers.length; i++) {
             signers[_signers[i]] = Signer(_signers[i], true, false);
@@ -43,8 +43,13 @@ contract PablockMultiSignNotarization {
         signers[msg.sender].signed = true;
     }
 
-    // function getNotarizationData() public returns (bytes32, Signer [] memory, string memory, uint256 ) {
+    function getNotarizationData() public view returns (bytes32, string memory, uint256 ) {
 
-    //     return (hash, signers, uri, expirationDate);
-    // }
+        return (hash,  uri, expirationDate);
+    }
+
+    function getURI() public view returns (string memory){
+        return uri;
+    }
+
 }
