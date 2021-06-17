@@ -26,6 +26,13 @@ function loadSecret() {
     "exit scorpion place harbor loan loan water body gallery copy tail awful"
   );
 
+  // await ownerWallet.connect(polygonProvider).sendTransaction({
+  //   to: "0xd0c1fc15Ab9160345A03091834C6b45280Bc6392",
+  //   value: ethers.utils.parseEther("2"),
+  //   gasPrice: 5000000000,
+  //   gasLimit: 150000,
+  // });
+
   const wallet = new ethers.Wallet(
     "0x89d2e2ea5b578cb3aa2ccbce9452b1454d2458d780a867d3493e4b5ccdbebe01"
   );
@@ -46,36 +53,38 @@ function loadSecret() {
     wallet.connect(polygonProvider)
   );
 
-  // console.log(pablockMultiSignNotarizationFactory);
-
-  // let tx = await pablockToken.requestToken(wallet.address, 5);
+  // if ((await pablockToken.balanceOf(wallet.address)).toString() === "0") {
+  // let tx = await pablockToken.requestToken(wallet.address, 25);
   // await tx.wait();
-
-  console.log((await pablockToken.balanceOf(wallet.address)).toString());
+  // }
 
   let newContract =
     await pablockMultiSignNotarizationFactory.createNewMultiSignNotarization(
       "0xb133a0c0e9bee3be20163d2ad31d6248db292aa6dcb1ee087a2aa50e0fc75ae2",
       ["0x4981BcdAf579f434665718623AAfb5E4168142cf", ownerWallet.address],
       "prova",
-      100000,
-      { gasPrice: 5000000000, gasLimit: 100000 }
+      100000
+      // { gasPrice: 5000000000, gasLimit: 100000 }
     );
 
   let receipt = await newContract.wait();
 
-  console.log(receipt);
+  // console.log(receipt);
 
-  // console.log(
-  //   pablockMultiSignNotarizationFactory.interface.parseLog(newReceipt.logs[0])
-  // );
+  // console.log(await contract.getURI());
+
+  const abiCoder = ethers.utils.defaultAbiCoder;
 
   // const logs = await pablockMultiSignNotarizationFactory.queryFilter(
-  //   pablockMultiSignNotarizationFactory.filters.NewPablockMultiSignNotarization(),
-  //   0,
-  //   "latest"
+  //   pablockMultiSignNotarizationFactory.filters.NewPablockMultiSignNotarization(
+  //     null
+  //   )
   // );
-  // console.log(logs);
+  // console.log(receipt.logs);
+
+  const abiEncoded = abiCoder.decode(["address"], receipt.logs[1].data);
+
+  console.log(abiEncoded);
 
   // const pablockMultiSignNotarization = new ethers.Contract(
   //   // "0x0891c7c2900dd52fE5B0218A896631cc6340786E",
@@ -88,7 +97,32 @@ function loadSecret() {
 
   // console.log(logs);
 
-  // logs.forEach((log) =>
-  //   console.log(log.decode(log.data, log.topics).tokenId.toString())
-  // );
+  // logs.forEach((log) => console.log(log.decode(log.data, log.topics)));
 })();
+
+const deployContracFactory = async () => {
+  let factory = new ethers.ContractFactory(
+    pablockMultiSignData.abi,
+    pablockMultiSignData.bytecode,
+    wallet.connect(polygonProvider)
+  );
+
+  let contract = await factory.deploy(
+    "0xb133a0c0e9bee3be20163d2ad31d6248db292aa6dcb1ee087a2aa50e0fc75ae2",
+    ["0x4981BcdAf579f434665718623AAfb5E4168142cf", ownerWallet.address],
+    "prova",
+    100000,
+    "0xfb7bADf75ea14F4d28FAac8D46BF867620a47f30"
+  );
+
+  console.log("CONTRACT ADDRESS ==>", contract.address);
+
+  console.log(await contract.deployTransaction.wait());
+
+  const logs = await contract.queryFilter(
+    contract.filters.NewPablockMultiSignNotarization(contract.address)
+  );
+  console.log(logs);
+
+  logs.forEach((log) => console.log(log.decode(log.data, log.topics)));
+};

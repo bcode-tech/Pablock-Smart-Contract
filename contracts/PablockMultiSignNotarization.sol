@@ -9,6 +9,8 @@ contract PablockMultiSignNotarization {
 
 
     address private pablockTokenAddress;
+    
+
 
     struct Signer {
         address addr;
@@ -33,6 +35,8 @@ contract PablockMultiSignNotarization {
         for (uint i = 0; i < _signers.length; i++) {
             signers[_signers[i]] = Signer(_signers[i], true, false);
         }
+
+
     }
 
     function signDocument() public {
