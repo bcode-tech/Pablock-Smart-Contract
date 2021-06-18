@@ -17,12 +17,15 @@
  * phrase from a file you've .gitignored so it doesn't accidentally become public.
  *
  */
-const HDWalletProvider = require("truffle-hdwallet-provider");
-const PrivateKeyProvider = require("truffle-privatekey-provider");
-// const infuraKey = "fj4jll3k.....";
-//
-// const fs = require('fs');
-// const mnemonic = fs.readFileSync(".secret").toString().trim();
+
+const HDWalletProvider = require("@truffle/hdwallet-provider");
+const fs = require("fs");
+
+const infuraKey = fs.readFileSync(".infurakey.secret");
+const maticMnemonic = fs.readFileSync(".matic.secret").toString().trim();
+const mumbaiMnemonic = fs.readFileSync(".mumbai.secret").toString().trim();
+const goerliMnemonic = fs.readFileSync(".goerli.secret").toString().trim();
+const ropstenMnemonic = fs.readFileSync(".ropsten.secret").toString().trim();
 
 module.exports = {
   /**
@@ -49,10 +52,10 @@ module.exports = {
     },
     matic: {
       provider: () =>
-        new HDWalletProvider(
-          "topple bracket scissors frame adult begin observe invite doll kid earth behave",
-          `https://rpc-mainnet.maticvigil.com/`
-        ),
+        new HDWalletProvider({
+          mnemonic: maticMnemonic,
+          providerOrUrl: `https://polygon-mumbai.infura.io/v3/${infuraKey}`,
+        }),
       network_id: 137,
       confirmations: 2,
       timeoutBlocks: 200,
@@ -60,10 +63,10 @@ module.exports = {
     },
     mumbai: {
       provider: () =>
-        new PrivateKeyProvider(
-          "0xaadb9a97addac5e4910a3b8cdafbba5073cc68f8633a1de64254d23a6b53d3db",
-          `https://rpc-mumbai.maticvigil.com/`
-        ),
+        new HDWalletProvider({
+          mnemonic: mumbaiMnemonic,
+          providerOrUrl: `https://polygon-mumbai.infura.io/v3/${infuraKey}`,
+        }),
       network_id: 80001,
       confirmations: 2,
       timeoutBlocks: 200,
@@ -71,10 +74,10 @@ module.exports = {
     },
     goerli: {
       provider: () =>
-        new PrivateKeyProvider(
-          "0x4a233a438a7a26729b1c578d2c4832af4906d56fdcdb93e1f3e49326862ec528",
-          "https://goerli.infura.io/v3/ac2aa697eecc4c4cb28876e85af2fc3f"
-        ),
+        new HDWalletProvider({
+          mnemonic: goerliMnemonic,
+          providerOrUrl: `https://goerli.infura.io/v3/${infuraKey}`,
+        }),
       network_id: 5,
       // confirmations: 2,
       // timeoutBlocks: 200,
@@ -82,10 +85,10 @@ module.exports = {
     },
     ropsten: {
       provider: () =>
-        new PrivateKeyProvider(
-          "0x4a233a438a7a26729b1c578d2c4832af4906d56fdcdb93e1f3e49326862ec528",
-          "https://ropsten.infura.io/v3/ac2aa697eecc4c4cb28876e85af2fc3f"
-        ),
+        new HDWalletProvider({
+          mnemonic: ropstenMnemonic,
+          providerOrUrl: `https://ropsten.infura.io/v3/${infuraKey}`,
+        }),
       network_id: 3,
       // confirmations: 2,
       // timeoutBlocks: 200,

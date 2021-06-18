@@ -39,7 +39,8 @@ contract PablockToken is ERC20 {
         _approve(msg.sender, address(this), MAX_ALLOWANCE);
     }
 
-    function receiveAndBurn(uint256 amount, address addr) public {
+    function receiveAndBurn(uint256 amount, address addr) public returns (bool) {
         _burn(addr, amount);
+        return true;
     }
 }
