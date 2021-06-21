@@ -42,7 +42,6 @@ contract("PablockToken", function (accounts) {
   it("should be able to create a MultiSignature Contract", async () => {
     const multisignatureFactoryInstance =
       await PablockMultiSignFactory.deployed();
-
     try {
       let res =
         await multisignatureFactoryInstance.createNewMultiSignNotarization(

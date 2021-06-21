@@ -8,8 +8,15 @@ contract PablockToken is ERC20 {
     uint256 maxSupply;
     uint256 MAX_ALLOWANCE = 2 ^ (256 - 1);
 
+    mapping(address => bool) private contractWhitelist;
+
     modifier byOwner(){
         require(contractOwner == msg.sender, "Not allowed");
+        _;
+    }
+
+    modifier onlyWhitelisted(){
+        require(contractWhitelist[msg.sender], "Contract not allowed");
         _;
     }
             
@@ -26,6 +33,14 @@ contract PablockToken is ERC20 {
         _mint(to, mintQuantity);
     }
 
+    function addContractToWhitelist(address _contract) public byOwner {
+        contractWhitelist[_contract] = true;
+    }
+
+     function removeContractFromWhitelist(address _contract) public byOwner {
+        contractWhitelist[_contract] = false;
+    }
+
     function changeOwner(address _newOwner) public byOwner {
         contractOwner = _newOwner;
     }
@@ -39,8 +54,12 @@ contract PablockToken is ERC20 {
         _approve(msg.sender, address(this), MAX_ALLOWANCE);
     }
 
-    function receiveAndBurn(uint256 amount, address addr) public returns (bool) {
+    function receiveAndBurn(uint256 amount, address addr) public onlyWhitelisted returns (bool) {
         _burn(addr, amount);
         return true;
+    }
+
+    function getVersion() public view returns (string memory){
+        return "PablockToken version 0.2.0";
     }
 }

@@ -23,7 +23,7 @@ const fs = require("fs");
 
 const infuraKey = fs.readFileSync(".infurakey.secret");
 const maticMnemonic = fs.readFileSync(".matic.secret").toString().trim();
-const mumbaiMnemonic = fs.readFileSync(".mumbai.secret").toString().trim();
+const mumbaiPrivate = fs.readFileSync(".mumbai.secret").toString().trim();
 const goerliMnemonic = fs.readFileSync(".goerli.secret").toString().trim();
 const ropstenMnemonic = fs.readFileSync(".ropsten.secret").toString().trim();
 
@@ -64,12 +64,13 @@ module.exports = {
     mumbai: {
       provider: () =>
         new HDWalletProvider({
-          mnemonic: mumbaiMnemonic,
+          privateKeys: [mumbaiPrivate],
+          // mnemonic: mumbaiMnemonic,
           providerOrUrl: `https://polygon-mumbai.infura.io/v3/${infuraKey}`,
         }),
       network_id: 80001,
-      confirmations: 2,
-      timeoutBlocks: 200,
+      // confirmations: 2,
+      // timeoutBlocks: 200,
       skipDryRun: true,
     },
     goerli: {
