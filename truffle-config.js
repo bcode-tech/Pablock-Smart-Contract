@@ -18,14 +18,23 @@
  *
  */
 
+const isCI = process.env.CI;
 const HDWalletProvider = require("@truffle/hdwallet-provider");
 const fs = require("fs");
 
-const infuraKey = fs.readFileSync(".infurakey.secret");
-const maticMnemonic = fs.readFileSync(".matic.secret").toString().trim();
-const mumbaiPrivate = fs.readFileSync(".mumbai.secret").toString().trim();
-const goerliMnemonic = fs.readFileSync(".goerli.secret").toString().trim();
-const ropstenMnemonic = fs.readFileSync(".ropsten.secret").toString().trim();
+let infuraKey = null;
+let maticMnemonic = null;
+let mumbaiPrivate = null;
+let goerliMnemonic = null;
+let ropstenMnemonic = null;
+
+if (!isCI) {
+  infuraKey = fs.readFileSync(".infurakey.secret");
+  maticMnemonic = fs.readFileSync(".matic.secret").toString().trim();
+  mumbaiPrivate = fs.readFileSync(".mumbai.secret").toString().trim();
+  goerliMnemonic = fs.readFileSync(".goerli.secret").toString().trim();
+  ropstenMnemonic = fs.readFileSync(".ropsten.secret").toString().trim();
+}
 
 module.exports = {
   /**
