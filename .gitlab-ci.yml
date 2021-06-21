@@ -11,6 +11,6 @@ smart_contracts:
   stage: truffle-tests
   before_script:
     - npm install
-    - npm run start:ganache
+    - npm run start:ganache-ci
   script:
     - npm run test

@@ -10,7 +10,8 @@
     "test": "npx truffle test --network local",
     "test:mumbai": "npx truffle test --network mumbai",
     "deploy:mumbai": "npx truffle deploy --network mumbai",
-    "start:ganache": "npx ganache-cli --port 7545"
+    "start:ganache": "npx ganache-cli --port 7545",
+    "start:ganache-ci": "ganache-cli > /dev/null 2>&1 &"
   },
   "keywords": [],
   "author": "",
