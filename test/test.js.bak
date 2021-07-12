@@ -1,8 +1,12 @@
+const { ethers } = require("ethers");
 const truffleAssert = require("truffle-assertions");
 
 const PablockToken = artifacts.require("./PablockToken.sol");
 const PablockMultiSignFactory = artifacts.require(
   "./PablockMultiSignFactory.sol"
+);
+const PablockMultiSign = artifacts.require(
+  "./PablockMultiSignNotarization.sol"
 );
 const PablockNotarization = artifacts.require("./PablockNotarization.sol");
 const PablockNFT = artifacts.require("./PablockNFT.sol");
@@ -16,6 +20,7 @@ contract("PablockToken", function (accounts) {
     const balanceBefore = await instance.balanceOf(accounts[1]);
 
     await instance.requestToken(accounts[1], 3);
+    await instance.requestToken(accounts[2], 3);
 
     const balanceAfter = await instance.balanceOf(accounts[1]);
 
@@ -106,5 +111,51 @@ contract("PablockToken", function (accounts) {
       null,
       "Multisignature contract has been createn even without paying tokens"
     );
+  });
+
+  it("should sign document", async () => {
+    const multisignatureFactoryInstance =
+      await PablockMultiSignFactory.deployed();
+    let error = null;
+    let multisignatureAddress = null;
+
+    let res = await multisignatureFactoryInstance
+      .createNewMultiSignNotarization(
+        "0xb133a0c0e9bee3be20163d2ad31d6248db292aa6dcb1ee087a2aa50e0fc75ae2",
+        [accounts[2]],
+        "prova",
+        100000,
+        { from: accounts[1] }
+      )
+      .catch((e) => {
+        error = e;
+      });
+
+    if (res) {
+      truffleAssert.eventEmitted(
+        res,
+        "NewPablockMultiSignNotarization",
+        (ev) => {
+          console.log(ev.multiSignAddress);
+          multisignatureAddress = ev.multiSignAddress;
+          return ev.multiSignAddress;
+        }
+      );
+    }
+
+    const pablockTokenInstance = await PablockToken.deployed();
+
+    let multiSignContract = await PablockMultiSign.at(multisignatureAddress);
+
+    pablockTokenInstance.addContractToWhitelist(multisignatureAddress, {
+      from: accounts[0],
+    });
+
+    await multiSignContract.signDocument({ from: accounts[2] });
+
+    let status = await multiSignContract.getSignerStatus(accounts[2]);
+    console.log("STATUS ==>", status);
+
+    assert.equal(status, true, "Account 2 has not signed");
   });
 });

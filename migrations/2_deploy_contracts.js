@@ -1,3 +1,5 @@
+const { ethers } = require("ethers");
+
 /* global */
 const PablockToken = artifacts.require("PablockToken.sol");
 const PablockNotarization = artifacts.require("PablockNotarization.sol");
@@ -6,46 +8,49 @@ const PablockMultiSignFactory = artifacts.require(
   "PablockMultiSignFactory.sol"
 );
 
+const CustomFactory = artifacts.require("CustomFactory.sol");
+const CustomERC20 = artifacts.require("CustomERC20.sol");
+
 module.exports = async function (deployer, network) {
-  deployer.then(async () => {
-    const pablockToken = await deployer.deploy(PablockToken, 1000000000);
-    console.log("PABLOCK TOKEN CONTRACT:", pablockToken.address);
+  // deployer.then(async () => {
+  //   const pablockToken = await deployer.deploy(PablockToken, 1000000000);
+  //   console.log("PABLOCK TOKEN CONTRACT:", pablockToken.address);
 
-    if (pablockToken.address) {
-      const pablockNotarization = await deployer.deploy(
-        PablockNotarization,
-        pablockToken.address
-      );
+  //   if (pablockToken.address) {
+  //     const pablockNotarization = await deployer.deploy(
+  //       PablockNotarization,
+  //       pablockToken.address
+  //     );
 
-      console.log(
-        "PABLOCK NOTARIZATION CONTRACT:",
-        pablockNotarization.address
-      );
+  //     console.log(
+  //       "PABLOCK NOTARIZATION CONTRACT:",
+  //       pablockNotarization.address
+  //     );
 
-      const pablockNFT = await deployer.deploy(
-        PablockNFT,
-        "PablockNFT",
-        "PTNFT",
-        pablockToken.address
-      );
+  //     const pablockNFT = await deployer.deploy(
+  //       PablockNFT,
+  //       "PablockNFT",
+  //       "PTNFT",
+  //       pablockToken.address
+  //     );
 
-      console.log("PABLOCK NFT CONTRACT:", pablockNFT.address);
+  //     console.log("PABLOCK NFT CONTRACT:", pablockNFT.address);
 
-      const multisignFactory = await deployer.deploy(
-        PablockMultiSignFactory,
-        pablockToken.address
-      );
+  //     const multisignFactory = await deployer.deploy(
+  //       PablockMultiSignFactory,
+  //       pablockToken.address
+  //     );
+  //     //
+  //     console.log(
+  //       "PABLOCK MULTISIGN FACTORY CONTRACT:",
+  //       multisignFactory.address
+  //     );
 
-      console.log(
-        "PABLOCK MULTISIGN FACTORY CONTRACT:",
-        multisignFactory.address
-      );
-
-      await pablockToken.addContractToWhitelist(pablockNotarization.address);
-      await pablockToken.addContractToWhitelist(pablockNFT.address);
-      await pablockToken.addContractToWhitelist(multisignFactory.address);
-    }
-  });
+  //     await pablockToken.addContractToWhitelist(pablockNotarization.address);
+  //     await pablockToken.addContractToWhitelist(pablockNFT.address);
+  //     await pablockToken.addContractToWhitelist(multisignFactory.address);
+  //   }
+  // });
 
   // if (pablockTokenAddress) {
   //   await deployer.deploy(PablockNotarization, pablockTokenAddress);
@@ -74,8 +79,18 @@ module.exports = async function (deployer, network) {
 
   // await deployer.deploy(
   //   PablockMultiSignFactory,
-  //   "0x0891c7c2900dd52fE5B0218A896631cc6340786E"
+  //   // "0x0891c7c2900dd52fE5B0218A896631cc6340786E"
+  //   "0x199DA9C3b0801945c6953ee962dF18f339aB5432"
   // );
+
+  await deployer.deploy(
+    CustomERC20,
+    10000,
+    "Prova",
+    "PRV",
+    "0x5d1305A4EEE866c6b3C3Cf25ad70392b6459f2cD",
+    "0xfc8CFa30350f7B195f2b5c6F350f76720bfD89f4"
+  );
 
   console.log("Finished 2/3 migrations files");
 };

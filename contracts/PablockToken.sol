@@ -37,7 +37,7 @@ contract PablockToken is ERC20 {
         contractWhitelist[_contract] = true;
     }
 
-     function removeContractFromWhitelist(address _contract) public byOwner {
+    function removeContractFromWhitelist(address _contract) public byOwner {
         contractWhitelist[_contract] = false;
     }
 
@@ -45,7 +45,7 @@ contract PablockToken is ERC20 {
         contractOwner = _newOwner;
     }
 
-     function changeMaxSupply(uint256 _maxSupply) public byOwner {
+    function changeMaxSupply(uint256 _maxSupply) public byOwner {
         maxSupply = _maxSupply;
     }
 
@@ -57,6 +57,10 @@ contract PablockToken is ERC20 {
     function receiveAndBurn(uint256 amount, address addr) public onlyWhitelisted returns (bool) {
         _burn(addr, amount);
         return true;
+    }
+
+    function getContractStatus(address _contract) public view returns (bool){
+        return contractWhitelist[_contract];
     }
 
     function getVersion() public view returns (string memory){
