@@ -12,6 +12,8 @@ const CustomFactory = artifacts.require("CustomFactory.sol");
 const CustomERC20 = artifacts.require("CustomERC20.sol");
 
 module.exports = async function (deployer, network) {
+  process.env.NETWORK = deployer.network;
+
   // deployer.then(async () => {
   //   const pablockToken = await deployer.deploy(PablockToken, 1000000000);
   //   console.log("PABLOCK TOKEN CONTRACT:", pablockToken.address);

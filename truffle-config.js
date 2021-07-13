@@ -132,13 +132,13 @@ module.exports = {
   },
 
   // Set default mocha options here, use special reporters etc.
-  mocha: {
-    reporter: "eth-gas-reporter",
-    reporterOptions: {
-      outputFile: "./gas_report.txt",
-      noColors: true,
-    },
-  },
+  // mocha: {
+  //   reporter: "eth-gas-reporter",
+  //   reporterOptions: {
+  //     outputFile: "./gas_report.txt",
+  //     noColors: true,
+  //   },
+  // },
 
   // Configure your compilers
   compilers: {
