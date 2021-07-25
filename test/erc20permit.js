@@ -24,6 +24,7 @@ const infuraKey = fs.readFileSync(".infurakey.secret");
 
 const RPC_PROVIDER = {
   mumbai: `https://polygon-mumbai.infura.io/v3/${infuraKey}`,
+  local: `http://127.0.0.1:7545/`,
 };
 
 contract("ERC20Permit", async (accounts) => {
@@ -67,11 +68,11 @@ contract("ERC20Permit", async (accounts) => {
     // we do not want, so we're manually signing here
     const { v, r, s } = sign(digest, Buffer.from(ownerPrivateKey, "hex"));
 
-    const receipt = await customERC20.populateTransaction.permit(
+    const receipt = await customERC20.populateTransaction.requestPermit(
       approve.owner,
       approve.spender,
       approve.value,
-      deadline,
+      digest,
       v,
       r,
       s

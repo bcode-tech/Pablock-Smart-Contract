@@ -8,7 +8,6 @@ import {ERC20, ERC20Permit} from "erc20permit/contracts/ERC20Permit.sol";
 
 contract CustomERC20 is ERC20Permit {
     address contractOwner;
-    uint256 maxSupply;
     uint256 MAX_ALLOWANCE = 2 ^ (256 - 1);
 
     mapping(address => bool) private delegates;
@@ -28,20 +27,34 @@ contract CustomERC20 is ERC20Permit {
         _;
     }
             
-    constructor (uint256 _maxSupply, string memory _name, string memory _symbol, address  _owner, address _delegate) ERC20Permit(_name, _symbol) {
-        contractOwner = msg.sender;
+    constructor (string memory _name, string memory _symbol, address  _owner, address _delegate) ERC20Permit(_name, _symbol) {
+        contractOwner = _owner;
         delegates[_delegate] = true;
         delegates[msg.sender] = true;
-        maxSupply = _maxSupply;
+        
+
+        // _mint(address(this), maxSupply);
     }
 
     function mint(address to, uint256 mintQuantity) public isDelegated {
-        require(
-            maxSupply >= totalSupply() + mintQuantity,
-            "Would exceed max supply"
-        );
+        // require(
+        //     maxSupply >= totalSupply() + mintQuantity,
+        //     "Would exceed max supply"
+        // );
         _mint(to, mintQuantity);
+
+        // require(
+        //     balanceOf(address(this)) >= mintQuantity,
+        //     "Would exceed max supply"
+        // );
+        // _transfer(address(this), to, mintQuantity);
     } 
+
+    function spendToken(address from, uint256 amount) public isDelegated {
+
+        _transfer(from, address(this), amount);
+
+    }
 
     function addDelegate(address _addr) public isDelegated {
         delegates[_addr] = true;
@@ -55,10 +68,6 @@ contract CustomERC20 is ERC20Permit {
         contractOwner = _newOwner;
     }
 
-    function changeMaxSupply(uint256 _maxSupply) public byOwner {
-        maxSupply = _maxSupply;
-    }
-
     function transferToken( address from, address to,uint256 amount) public isDelegated returns (bool) {
         _transfer(from, to, amount);
         return true;
@@ -68,7 +77,7 @@ contract CustomERC20 is ERC20Permit {
         return delegates[_addr];
     }
 
-    function getVersion() public view returns (string memory){
+    function getVersion() public pure returns (string memory){
         return "CustomToken version 0.1.0";
     }
     
@@ -78,5 +87,24 @@ contract CustomERC20 is ERC20Permit {
             chainId := chainid()
         }
         return chainId;
+    }
+
+    function requestPermit(address owner, address spender, uint256 amount, bytes32 hash, uint8 v, bytes32 r, bytes32 s) public {  
+        
+        require( verifySignature(owner, hash, v, r, s), "ERC20: Invalid signature");
+
+        nonces[owner]++;
+        
+        if(msg.sender != spender){
+            _approve(owner, msg.sender, amount);       
+        }
+        _approve(owner, spender, amount);
+    }
+
+
+    function verifySignature(address owner, bytes32 hash, uint8 v, bytes32 r, bytes32 s) public pure returns (bool result){
+        
+        return ecrecover(hash, v, r, s) == owner;
+
     }
 }
