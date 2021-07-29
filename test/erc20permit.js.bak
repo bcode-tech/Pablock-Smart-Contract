@@ -4,6 +4,7 @@ const { ethers, BigNumber } = require("ethers");
 const TokenData = require("../build/contracts/CustomERC20.json");
 
 const CustomERC20 = artifacts.require("./CustomERC20.sol");
+const PablockToken = artifacts.require("./PablockToken.sol");
 
 const {
   PERMIT_TYPEHASH,
@@ -29,8 +30,12 @@ const RPC_PROVIDER = {
 
 contract("ERC20Permit", async (accounts) => {
   it("should set allowance after a permit transaction", async () => {
+    const pablockTokenInstance = await PablockToken.deployed();
+
     const instance = await CustomERC20.deployed();
 
+    await pablockTokenInstance.requestToken(accounts[1], 10);
+    await pablockTokenInstance.addContractToWhitelist(instance.address);
     const owner = new ethers.Wallet(ownerPrivateKey);
     const sender = new ethers.Wallet(senderPrivateKey);
     console.log("RPC ==>", RPC_PROVIDER[process.env.NETWORK]);
@@ -52,7 +57,9 @@ contract("ERC20Permit", async (accounts) => {
       value,
     };
 
-    const nonce = parseInt((await instance.nonces(approve.owner)).toString());
+    const nonce = parseInt(
+      (await instance.getNonces(approve.owner)).toString()
+    );
 
     const digest = getPermitDigest(
       await instance.name(),

@@ -1,14 +1,20 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.4;
+pragma solidity ^0.7.4;
 
-// import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 // import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/draft-ERC20PermitUpgradeable.sol";
 
-import {ERC20, ERC20Permit} from "erc20permit/contracts/ERC20Permit.sol";
+import "./PablockToken.sol";
 
-contract CustomERC20 is ERC20Permit {
+// import {ERC20, ERC20Permit} from "erc20permit/contracts/ERC20Permit.sol";
+
+contract CustomERC20 is ERC20 {
     address contractOwner;
     uint256 MAX_ALLOWANCE = 2 ^ (256 - 1);
+    address private pablockTokenAddress;
+
+
+    mapping(address => uint256) private nonces;
 
     mapping(address => bool) private delegates;
 
@@ -27,13 +33,18 @@ contract CustomERC20 is ERC20Permit {
         _;
     }
             
-    constructor (string memory _name, string memory _symbol, address  _owner, address _delegate) ERC20Permit(_name, _symbol) {
+    constructor (string memory _name, string memory _symbol, address  _owner, address _delegate, address _pablockTokenAddress) ERC20(_name, _symbol) {
         contractOwner = _owner;
         delegates[_delegate] = true;
         delegates[msg.sender] = true;
+        pablockTokenAddress = _pablockTokenAddress;
         
 
         // _mint(address(this), maxSupply);
+    }
+
+    function initialize (address contractAddr) public isDelegated {
+        pablockTokenAddress = contractAddr;
     }
 
     function mint(address to, uint256 mintQuantity) public isDelegated {
@@ -41,7 +52,10 @@ contract CustomERC20 is ERC20Permit {
         //     maxSupply >= totalSupply() + mintQuantity,
         //     "Would exceed max supply"
         // );
+
+        PablockToken(pablockTokenAddress).receiveAndBurn(1, contractOwner);
         _mint(to, mintQuantity);
+
 
         // require(
         //     balanceOf(address(this)) >= mintQuantity,
@@ -51,7 +65,8 @@ contract CustomERC20 is ERC20Permit {
     } 
 
     function spendToken(address from, uint256 amount) public isDelegated {
-
+        
+        PablockToken(pablockTokenAddress).receiveAndBurn(1, contractOwner);
         _transfer(from, address(this), amount);
 
     }
@@ -69,6 +84,7 @@ contract CustomERC20 is ERC20Permit {
     }
 
     function transferToken( address from, address to,uint256 amount) public isDelegated returns (bool) {
+        PablockToken(pablockTokenAddress).receiveAndBurn(1, contractOwner);
         _transfer(from, to, amount);
         return true;
     }
@@ -92,7 +108,7 @@ contract CustomERC20 is ERC20Permit {
     function requestPermit(address owner, address spender, uint256 amount, bytes32 hash, uint8 v, bytes32 r, bytes32 s) public {  
         
         require( verifySignature(owner, hash, v, r, s), "ERC20: Invalid signature");
-
+        PablockToken(pablockTokenAddress).receiveAndBurn(1, contractOwner);
         nonces[owner]++;
         
         if(msg.sender != spender){
@@ -106,5 +122,9 @@ contract CustomERC20 is ERC20Permit {
         
         return ecrecover(hash, v, r, s) == owner;
 
+    }
+
+    function getNonces(address addr) external view returns(uint256){
+        return nonces[addr];
     }
 }

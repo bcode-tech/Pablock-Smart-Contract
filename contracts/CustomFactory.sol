@@ -7,11 +7,11 @@ contract CustomFactory {
    
    event NewCustomToken(address customTokenAddress);
     
-   function createNewCustomToken(string memory _name, string memory _symbol, address _owner, address _delegate) public {//returns (PablockMultiSignNotarization){
+   function createNewCustomToken(string memory _name, string memory _symbol, address _owner, address _delegate, address _pablockTokenAddress) public {//returns (PablockMultiSignNotarization){
         
         CustomERC20 _newCustomToken =
             new CustomERC20(
-                _name, _symbol, _owner, _delegate
+                _name, _symbol, _owner, _delegate, _pablockTokenAddress
             );
 
         emit NewCustomToken(address(_newCustomToken));
