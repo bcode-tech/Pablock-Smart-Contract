@@ -49,7 +49,6 @@ contract PablockToken is ERC20 {
         maxSupply = _maxSupply;
     }
 
-
     function unlimitedApprove() external {
         _approve(msg.sender, address(this), MAX_ALLOWANCE);
     }
