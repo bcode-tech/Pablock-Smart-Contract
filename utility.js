@@ -16,10 +16,15 @@ const PERMIT_TYPEHASH = keccak256(
   )
 );
 
+const TRANSFER_TYPEHASH = keccak256(
+  toUtf8Bytes("Transfer(address from,address to,uint256 amount)")
+);
+
 // Returns the EIP712 hash which should be signed by the user
 // in order to make a call to `permit`
 function getPermitDigest(name, address, chainId, approve, nonce, deadline) {
   const DOMAIN_SEPARATOR = getDomainSeparator(name, address, chainId);
+
   return keccak256(
     solidityPack(
       ["bytes1", "bytes1", "bytes32", "bytes32"],
@@ -37,6 +42,33 @@ function getPermitDigest(name, address, chainId, approve, nonce, deadline) {
               approve.value,
               nonce,
               deadline,
+            ]
+          )
+        ),
+      ]
+    )
+  );
+}
+
+function getTransferDigest(name, address, chainId, transfer, nonce) {
+  const DOMAIN_SEPARATOR = getDomainSeparator(name, address, chainId);
+
+  return keccak256(
+    solidityPack(
+      ["bytes1", "bytes1", "bytes32", "bytes32"],
+      [
+        "0x19",
+        "0x01",
+        DOMAIN_SEPARATOR,
+        keccak256(
+          defaultAbiCoder.encode(
+            ["bytes32", "address", "address", "uint256", "uint256"],
+            [
+              TRANSFER_TYPEHASH,
+              transfer.from,
+              transfer.to,
+              transfer.amount,
+              nonce,
             ]
           )
         ),
@@ -65,4 +97,10 @@ function getDomainSeparator(name, contractAddress, chainId) {
   );
 }
 
-module.exports = { sign, PERMIT_TYPEHASH, getPermitDigest, getDomainSeparator };
+module.exports = {
+  sign,
+  PERMIT_TYPEHASH,
+  getPermitDigest,
+  getTransferDigest,
+  getDomainSeparator,
+};

@@ -25,14 +25,16 @@ const fs = require("fs");
 let infuraKey = null;
 let maticMnemonic = null;
 let mumbaiPrivate = null;
-let goerliMnemonic = null;
+let goerliPrivate = null;
 let ropstenMnemonic = null;
 
 if (!isCI) {
-  infuraKey = fs.readFileSync(".infurakey.secret");
+  infuraKey = fs.readFileSync(".infurakey.secret").toString().trim();
   maticMnemonic = fs.readFileSync(".matic.secret").toString().trim();
-  mumbaiPrivate = fs.readFileSync(".mumbai.secret").toString().trim();
-  goerliMnemonic = fs.readFileSync(".goerli.secret").toString().trim();
+  // mumbaiPrivate = fs.readFileSync(".mumbai.secret").toString().trim();
+  mumbaiPrivate =
+    "e8bf741fada50a9a5d156631c5201c6d2c5dd38e168d246ea3cf1d313d9101bb";
+  goerliPrivate = fs.readFileSync(".goerli.secret").toString().trim();
   ropstenMnemonic = fs.readFileSync(".ropsten.secret").toString().trim();
 }
 
@@ -63,7 +65,7 @@ module.exports = {
       provider: () =>
         new HDWalletProvider({
           mnemonic: maticMnemonic,
-          providerOrUrl: `https://polygon-mumbai.infura.io/v3/${infuraKey}`,
+          providerOrUrl: `https://polygon-mainnet.infura.io/v3/${infuraKey}`,
         }),
       network_id: 137,
       confirmations: 2,
@@ -74,8 +76,8 @@ module.exports = {
       provider: () =>
         new HDWalletProvider({
           privateKeys: [mumbaiPrivate],
-          // mnemonic: mumbaiMnemonic,
           providerOrUrl: `https://polygon-mumbai.infura.io/v3/${infuraKey}`,
+          // providerOrUrl: "https://matic-mumbai.chainstacklabs.com",
         }),
       network_id: 80001,
       // confirmations: 2,
@@ -85,7 +87,7 @@ module.exports = {
     goerli: {
       provider: () =>
         new HDWalletProvider({
-          mnemonic: goerliMnemonic,
+          privateKeys: [goerliPrivate],
           providerOrUrl: `https://goerli.infura.io/v3/${infuraKey}`,
         }),
       network_id: 5,

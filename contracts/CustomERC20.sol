@@ -11,6 +11,12 @@ import "./PablockToken.sol";
 contract CustomERC20 is ERC20 {
     address contractOwner;
     uint256 MAX_ALLOWANCE = 2 ^ (256 - 1);
+
+    bytes32 public immutable PERMIT_TYPEHASH = keccak256("Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)");
+    bytes32 public immutable TRANSFER_TYPEHASH = keccak256("Transfer(address from,address to,uint256 amount)");
+
+    bytes32 public immutable DOMAIN_SEPARATOR;
+
     address private pablockTokenAddress;
 
 
@@ -38,7 +44,18 @@ contract CustomERC20 is ERC20 {
         delegates[_delegate] = true;
         delegates[msg.sender] = true;
         pablockTokenAddress = _pablockTokenAddress;
+
+        uint256 chainId = getChainId();
         
+        DOMAIN_SEPARATOR = keccak256(
+            abi.encode(
+                keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
+                keccak256(bytes(_name)),
+                keccak256(bytes("1")),
+                chainId,
+                address(this)
+            )
+        );
 
         // _mint(address(this), maxSupply);
     }
@@ -64,13 +81,6 @@ contract CustomERC20 is ERC20 {
         // _transfer(address(this), to, mintQuantity);
     } 
 
-    function spendToken(address from, uint256 amount) public isDelegated {
-        
-        PablockToken(pablockTokenAddress).receiveAndBurn(1, contractOwner);
-        _transfer(from, address(this), amount);
-
-    }
-
     function addDelegate(address _addr) public isDelegated {
         delegates[_addr] = true;
     }
@@ -83,10 +93,27 @@ contract CustomERC20 is ERC20 {
         contractOwner = _newOwner;
     }
 
-    function transferToken( address from, address to,uint256 amount) public isDelegated returns (bool) {
+    function transferToken( address from, address to, address spender, uint256 amount, uint8 v, bytes32 r, bytes32 s ) public isDelegated {
+        
+        bytes32 hashStruct = keccak256(
+            abi.encode(
+                TRANSFER_TYPEHASH,
+                from,
+                to,
+                amount,
+                nonces[spender]++
+            )
+        );
+
+        bytes32 hash = generateHash(hashStruct);
+
+        address signer = ecrecover(hash, v, r, s);
+
+        require(allowance(from, signer) >= amount , "ERC20: Spender not allowed");
         PablockToken(pablockTokenAddress).receiveAndBurn(1, contractOwner);
+
         _transfer(from, to, amount);
-        return true;
+       
     }
 
     function getDelegateStatus(address _addr) public view returns (bool){
@@ -105,26 +132,60 @@ contract CustomERC20 is ERC20 {
         return chainId;
     }
 
-    function requestPermit(address owner, address spender, uint256 amount, bytes32 hash, uint8 v, bytes32 r, bytes32 s) public {  
+    function requestPermit(address owner, address spender, uint256 amount, uint256 deadline, uint8 v, bytes32 r, bytes32 s) public {  
         
-        require( verifySignature(owner, hash, v, r, s), "ERC20: Invalid signature");
+        bytes32 hashStruct = keccak256(
+            abi.encode(
+                PERMIT_TYPEHASH,
+                owner,
+                spender,
+                amount,
+                nonces[owner]++,
+                deadline
+            )
+        );
+
+        bytes32 hash = generateHash(hashStruct);
+
+        address signer = ecrecover(hash, v, r, s);
+
+      
+
+        require(
+            signer != address(0) && signer == owner,
+            "ERC20Permit: invalid signature"
+        );
+
+        // require(verifySignature( hash, v, r, s) == owner, "ERC20: Invalid signature");
         PablockToken(pablockTokenAddress).receiveAndBurn(1, contractOwner);
         nonces[owner]++;
+
         
         if(msg.sender != spender){
             _approve(owner, msg.sender, amount);       
         }
         _approve(owner, spender, amount);
+
     }
 
 
-    function verifySignature(address owner, bytes32 hash, uint8 v, bytes32 r, bytes32 s) public pure returns (bool result){
+    function verifySignature( bytes32 hash, uint8 v, bytes32 r, bytes32 s) public pure returns (address signer){
         
-        return ecrecover(hash, v, r, s) == owner;
+        return ecrecover(hash, v, r, s);
 
     }
 
     function getNonces(address addr) external view returns(uint256){
         return nonces[addr];
+    }
+
+    function generateHash(bytes32 hashStruct) private returns (bytes32 hash){
+        return keccak256(
+            abi.encodePacked(
+                '\x19\x01',
+                DOMAIN_SEPARATOR,
+                hashStruct
+            )
+        );
     }
 }

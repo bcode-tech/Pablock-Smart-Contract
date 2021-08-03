@@ -32,7 +32,7 @@ contract PablockMultiSignFactory {
         // return _multiSign;
     }
 
-    function getVersion() public view returns (string memory){
+    function getVersion() public pure returns (string memory){
         return "Version 0.1.0";
     }
 }
