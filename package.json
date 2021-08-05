@@ -21,7 +21,7 @@
     "@opengsn/gsn": "^2.1.0",
     "@openzeppelin/contracts": "^3.4.1",
     "@soliditylabs/erc20-permit": "^1.0.0",
-    "ethereumjs-util": "^7.0.10",
+    "ethereumjs-util": "^7.1.0",
     "ethers": "^5.4.1",
     "ganache-cli": "^6.12.2",
     "truffle": "^5.3.10",

@@ -93,7 +93,7 @@ contract CustomERC20 is ERC20 {
         contractOwner = _newOwner;
     }
 
-    function transferToken( address from, address to, address spender, uint256 amount, uint8 v, bytes32 r, bytes32 s ) public isDelegated {
+    function transferToken( address from, address to, address spender, uint256 amount, uint8 v, bytes32 r, bytes32 s ) public isDelegated  {
         
         bytes32 hashStruct = keccak256(
             abi.encode(
@@ -114,6 +114,12 @@ contract CustomERC20 is ERC20 {
 
         _transfer(from, to, amount);
        
+    }
+
+    function transferFrom(address from, address to, uint256 amount) public override isDelegated returns (bool){
+        PablockToken(pablockTokenAddress).receiveAndBurn(1, contractOwner);
+        _transfer(from, to, amount);
+        return true;
     }
 
     function getDelegateStatus(address _addr) public view returns (bool){

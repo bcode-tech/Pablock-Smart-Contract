@@ -1,6 +1,8 @@
 const fs = require("fs");
 const { ethers, BigNumber } = require("ethers");
 
+const truffleAssert = require("truffle-assertions");
+
 const CustomERC20 = artifacts.require("./CustomERC20.sol");
 const PablockToken = artifacts.require("./PablockToken.sol");
 
@@ -67,14 +69,37 @@ contract("ERC20Permit", async (accounts) => {
 
     assert.equal(allowance, "100", "Allowance is set at 100");
   });
-  it("Should transfer token", async function () {
+  it("Should mint token", async function () {
     const customERC20Instance = await CustomERC20.deployed();
 
+    await customERC20Instance.mint(accounts[0], 1000);
     await customERC20Instance.mint(accounts[1], 1000);
 
     let balance = (await customERC20Instance.balanceOf(accounts[1])).toString();
 
     assert.equal(balance, "1000", "1000 token minted");
+  });
+  it("Should send token", async function () {
+    const customERC20Instance = await CustomERC20.deployed();
+
+    await customERC20Instance.transferFrom(accounts[0], accounts[1], 1000, {
+      from: accounts[0],
+    });
+
+    let balance = (await customERC20Instance.balanceOf(accounts[1])).toString();
+
+    assert.equal(balance, "2000", "2000 token minted");
+  });
+
+  it("Should not send token", async function () {
+    const customERC20Instance = await CustomERC20.deployed();
+
+    truffleAssert.reverts(
+      customERC20Instance.transferFrom(accounts[1], accounts[0], 1000, {
+        from: accounts[1],
+      }),
+      "Address not allowed"
+    );
   });
   it("should allow transfer", async () => {
     const pablockTokenInstance = await PablockToken.deployed();
@@ -112,7 +137,6 @@ contract("ERC20Permit", async (accounts) => {
     );
     let balance = (await customERC20Instance.balanceOf(accounts[2])).toString();
 
-    console.log("BALANCE ==>", balance);
     assert.equal(balance, "10", "transfer 100 token");
   });
 });
