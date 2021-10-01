@@ -11,7 +11,6 @@ contract PablockMultiSignNotarization {
     address private pablockTokenAddress;
     
 
-
     struct Signer {
         address addr;
         bool initialized;

@@ -8,6 +8,7 @@
   },
   "scripts": {
     "test": "npx truffle test --network local",
+    "deploy": "npx truffle deploy --network local",
     "test:mumbai": "npx truffle test --network mumbai",
     "deploy:mumbai": "npx truffle deploy --network mumbai",
     "start:ganache": "npx ganache-cli --port 7545",

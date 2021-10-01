@@ -17,14 +17,15 @@ function loadSecret() {
 
 (async () => {
   const polygonProvider = new ethers.providers.JsonRpcProvider(
-    "https://polygon-mumbai.infura.io/v3/49712e96334c4b22a2aa3d2a4c1224bb"
-    // "http://127.0.0.1:7545"
+    // "https://polygon-mumbai.infura.io/v3/49712e96334c4b22a2aa3d2a4c1224bb"
+    "http://127.0.0.1:7545"
   );
   //Mainnet
   const pablockWallet = new ethers.Wallet(
     // "topple bracket scissors frame adult begin observe invite doll kid earth behave" //Mainnet
     // "0xaadb9a97addac5e4910a3b8cdafbba5073cc68f8633a1de64254d23a6b53d3db" //Mumbai
-    "0x4a233a438a7a26729b1c578d2c4832af4906d56fdcdb93e1f3e49326862ec528"
+    // "0x4a233a438a7a26729b1c578d2c4832af4906d56fdcdb93e1f3e49326862ec528"
+    "0x52f6882af2362a0f3b9efc67e2521b6a698283e88ebb5428285168ea303fd15b"
     // "divide west journey supply number poem loud surprise genuine verb warfare resemble"
   );
 
@@ -37,15 +38,15 @@ function loadSecret() {
 
   const pablockToken = new ethers.Contract(
     // "0xbBE1aFaa82cF378AA124dcD6ab1c2B844F8944B4", //Mumbai
-    "0x3cb9aF9F735dA855306781462Eb6D32458650e55",
-    // "0x2b9233683001657161db866c7405493Fc1d1C22d", //Local
+    // "0x3cb9aF9F735dA855306781462Eb6D32458650e55",
+    "0x2b9233683001657161db866c7405493Fc1d1C22d", //Local
     // "0xfb7bADf75ea14F4d28FAac8D46BF867620a47f30",
     // "0xc1A4EEf2C26C1D757385f396411b8179b02c2B56", //Mainnet
     pablockTokenData.abi,
     pablockWallet.connect(polygonProvider)
   );
   let tx = await pablockToken.addContractToWhitelist(
-    "0x8f69F7E01F89C303Ef2075EF5b36272bAc291923",
+    "0x4E8b06C9b859120852271AB9aea68A264A547CDF",
     { gasPrice: 5000000000, gasLimit: 5000000 }
   );
   console.log(tx);

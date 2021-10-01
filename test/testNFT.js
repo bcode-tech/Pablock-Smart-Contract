@@ -4,6 +4,7 @@ const PablockToken = artifacts.require("./PablockToken.sol");
 const PablockNFT = artifacts.require("./PablockNFT.sol");
 
 const INDEX = 6;
+let tokenId = null;
 
 contract("PablockNFT", function (accounts) {
   it("should be possible to mint an NFT", async () => {
@@ -34,6 +35,9 @@ contract("PablockNFT", function (accounts) {
       "Pablock token has not been paid"
     );
   });
+  it(() => async () => {
+    const pablockNFTInstance = await PablockNFT.deployed();
+  });
   it("should be possible to transfer an NFT", async () => {
     const pablockNFTInstance = await PablockNFT.deployed();
 
@@ -42,7 +46,7 @@ contract("PablockNFT", function (accounts) {
       0
     );
 
-    const res = await pablockNFTInstance.transferNFT(
+    const res = await pablockNFTInstance.transferFrom(
       accounts[INDEX],
       accounts[INDEX + 1],
       tokenId,

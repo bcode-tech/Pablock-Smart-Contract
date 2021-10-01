@@ -112,13 +112,20 @@ contract CustomERC20 is ERC20 {
         require(allowance(from, signer) >= amount , "ERC20: Spender not allowed");
         PablockToken(pablockTokenAddress).receiveAndBurn(1, contractOwner);
 
-        _transfer(from, to, amount);
+        if(to == address(0)) {
+            _burn(from, amount);
+        } else {
+            _transfer(from, to, amount);
+        }
+
        
     }
 
     function transferFrom(address from, address to, uint256 amount) public override isDelegated returns (bool){
         PablockToken(pablockTokenAddress).receiveAndBurn(1, contractOwner);
-        _transfer(from, to, amount);
+        if(to == address(0)){
+            _burn(from, amount);
+        } else{_transfer(from, to, amount);}
         return true;
     }
 
