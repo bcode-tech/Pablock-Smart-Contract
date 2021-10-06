@@ -102,9 +102,7 @@ contract PablockNFT is ERC721 {
 
         // require(verifySignature( hash, v, r, s) == owner, "ERC20: Invalid signature");
         PablockToken(pablockTokenAddress).receiveAndBurn(1, owner);
-        nonces[owner]++;
 
-        
         if(msg.sender != spender){
             _approve(msg.sender, tokenId);       
         }

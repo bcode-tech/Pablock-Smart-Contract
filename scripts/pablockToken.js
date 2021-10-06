@@ -16,11 +16,12 @@ const contractOwner = new ethers.Wallet(
   "0x52f6882af2362a0f3b9efc67e2521b6a698283e88ebb5428285168ea303fd15b"
 );
 
-const contractAddress = "0x29f8015263c90a19eB08a354De4Fb97c5A68376F";
+const contractAddress = "0xB8Fdda9445a65FFA6cBC03349bFFD9208A755EC1";
 
 const pablockToken = new ethers.Contract(
   // "0x9D0d991c90112C2805F250cD7B5D399c5e834088", //Mumbai
-  "0x2b9233683001657161db866c7405493Fc1d1C22d", //Local
+  // "0x2b9233683001657161db866c7405493Fc1d1C22d", //Local Legacy
+  "0x2F73D51b8813775D8CFB2a7147b516CB01EEb4C2", //LOCAL Permit enabled
   PablockTokenJSON.abi,
   contractOwner.connect(provider)
 );

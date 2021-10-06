@@ -2,13 +2,20 @@
 pragma solidity ^0.7.4;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import * as utils from "./utils.sol";
 
 contract PablockToken is ERC20 {
     address contractOwner;
     uint256 maxSupply;
     uint256 MAX_ALLOWANCE = 2 ^ (256 - 1);
+    uint256 DECIMALS = 18;
+
+    bytes32 public immutable PERMIT_TYPEHASH = keccak256("Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)");
+
+    bytes32 public immutable DOMAIN_SEPARATOR;
 
     mapping(address => bool) private contractWhitelist;
+    mapping(address => uint256) private nonces;
 
     modifier byOwner(){
         require(contractOwner == msg.sender, "Not allowed");
@@ -23,14 +30,19 @@ contract PablockToken is ERC20 {
     constructor (uint256 _maxSupply)  ERC20("PablockToken", "PTK") {
         contractOwner = msg.sender;
         maxSupply = _maxSupply;
+
+        
+
+        DOMAIN_SEPARATOR = utils.getDomainSeparator( "PablockToken", address(this));
+        
     }
 
     function requestToken(address to, uint256 mintQuantity) public byOwner {
-        require(
-            maxSupply >= totalSupply() + mintQuantity,
-            "Would exceed max supply"
-        );
-        _mint(to, mintQuantity);
+        // require(
+        //     maxSupply >= totalSupply() + mintQuantity,
+        //     "Would exceed max supply"
+        // );
+        _mint(to, mintQuantity * 10 ** DECIMALS);
     }
 
     function addContractToWhitelist(address _contract) public byOwner {
@@ -54,7 +66,7 @@ contract PablockToken is ERC20 {
     }
 
     function receiveAndBurn(uint256 amount, address addr) public onlyWhitelisted returns (bool) {
-        _burn(addr, amount);
+        _burn(addr, amount * 10 ** DECIMALS);
         return true;
     }
 
@@ -62,7 +74,40 @@ contract PablockToken is ERC20 {
         return contractWhitelist[_contract];
     }
 
+     function requestPermit(address owner, address spender, uint256 amount, uint256 deadline, uint8 v, bytes32 r, bytes32 s) public {  
+        
+        bytes32 hashStruct = keccak256(
+            abi.encode(
+                PERMIT_TYPEHASH,
+                owner,
+                spender,
+                amount,
+                nonces[owner]++,
+                deadline
+            )
+        );
+
+        bytes32 hash = utils.generateHash(hashStruct, DOMAIN_SEPARATOR);
+
+        address signer = ecrecover(hash, v, r, s);
+
+        require(
+            signer != address(0) && signer == owner,
+            "PTK Permit: invalid signature"
+        );
+        
+        if(msg.sender != spender){
+            _approve(owner, msg.sender, amount * 10 ** DECIMALS);       
+        }
+        _approve(owner, spender, amount * 10 ** DECIMALS) ;
+
+    }
+
+    function getNonces(address addr) external view returns(uint256){
+        return nonces[addr];
+    }
+
     function getVersion() public view returns (string memory){
-        return "PablockToken version 0.2.0";
+        return "PablockToken version 0.2.1 (Gasless)";
     }
 }

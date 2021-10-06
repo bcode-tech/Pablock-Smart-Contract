@@ -16,7 +16,8 @@ module.exports = async function (deployer, network) {
 
     const pablockToken = {
       // address: "0x9D0d991c90112C2805F250cD7B5D399c5e834088", //MUMBAI
-      address: "0x2b9233683001657161db866c7405493Fc1d1C22d", //LOCAL
+      // address: "0x2b9233683001657161db866c7405493Fc1d1C22d", //LOCAL Legacy
+      address: "0x2F73D51b8813775D8CFB2a7147b516CB01EEb4C2", //LOCAL Permit enabled
     };
 
     if (pablockToken.address) {
@@ -24,14 +25,15 @@ module.exports = async function (deployer, network) {
       //   CustomERC20,
       //   "CustomERC20",
       //   "CTK",
-      //   // "0x5d1305A4EEE866c6b3C3Cf25ad70392b6459f2cD", // Contract Owner account[1]
-      //   // "0xfc8CFa30350f7B195f2b5c6F350f76720bfD89f4", // Delegate accounts[0]
-      //   "0x2b61353f31063D007F13eF207cc0cF412648FDF6", //Yupik Wallet address
-      //   "0xf68ec20B5B40B657A32d17DABBbDf6E4FD1497df", //Pablock Wallet address
+      //   "0x5d1305A4EEE866c6b3C3Cf25ad70392b6459f2cD", // Contract Owner account[1]
+      //   "0xfc8CFa30350f7B195f2b5c6F350f76720bfD89f4", // Delegate accounts[0]
+      //   // "0x2b61353f31063D007F13eF207cc0cF412648FDF6", //Yupik Wallet address
+      //   // "0xf68ec20B5B40B657A32d17DABBbDf6E4FD1497df", //Pablock Wallet address
       //   // "0x5a4654f393CBa1f8Aed8790E98435aEC057b353C", // Contract Owner account[1]
       //   // "0xf68ec20B5B40B657A32d17DABBbDf6E4FD1497df", // Delegate accounts[0]
       //   pablockToken.address
       // );
+      // console.log("CUSTOMERC20 TOKEN ADDRESS: ", customERC20.address);
 
       // await deployer.deploy(
       //   CustomERC20,
@@ -51,13 +53,13 @@ module.exports = async function (deployer, network) {
       //   pablockNotarization.address
       // );
 
-      const pablockNFT = await deployer.deploy(
-        PablockNFT,
-        "PablockNFT",
-        "PTNFT",
-        pablockToken.address
-      );
-      console.log("PABLOCK NFT CONTRACT:", pablockNFT.address);
+      // const pablockNFT = await deployer.deploy(
+      //   PablockNFT,
+      //   "PablockNFT",
+      //   "PTNFT",
+      //   pablockToken.address
+      // );
+      // console.log("PABLOCK NFT CONTRACT:", pablockNFT.address);
 
       // const multisignFactory = await deployer.deploy(
       //   PablockMultiSignFactory,
@@ -72,41 +74,18 @@ module.exports = async function (deployer, network) {
       // await pablockToken.addContractToWhitelist(pablockNFT.address);
       // await pablockToken.addContractToWhitelist(multisignFactory.address);
       // await pablockToken.addContractToWhitelist(customERC20.address);
+
+      const contractsAddress = [
+        // "0xF99b4Aef511E395958d254beF144866Ab4959287", // Notarization
+        // "0x86A8A88286443536764953E70A3aC533687B7012", // NFT
+        // "0x3EDCA10Df9E81A812ccf79ff10baAC67337680D6", // MultiSign
+        // "0xB8Fdda9445a65FFA6cBC03349bFFD9208A755EC1", // CustomERC20
+      ];
+      for (const addr of contractsAddress) {
+        await pablockToken.addContractToWhitelist(addr);
+      }
     }
   });
-
-  // if (pablockTokenAddress) {
-  //   await deployer.deploy(PablockNotarization, pablockTokenAddress);
-  //   await deployer.deploy(
-  //     PablockNFT,
-  //     "PablockNFT",
-  //     "PTNFT",
-  //     pablockTokenAddress
-  //   );
-  //   await deployer.deploy(PablockMultiSignFactory, pablockTokenAddress);
-  // }
-
-  // await deployer.deploy(
-  //   PablockNotarization,
-  //   "0xc1A4EEf2C26C1D757385f396411b8179b02c2B56"
-  // );
-
-  // await deployer.deploy(
-  //   PablockNFT,
-  //   "TryNFT",
-  //   "TNFT",
-  //   // "0xbBE1aFaa82cF378AA124dcD6ab1c2B844F8944B4"
-  //   // "0x0891c7c2900dd52fE5B0218A896631cc6340786E"
-  //   "0xAdEB4cEA8E4A28E2C6f83d1820DAB686929Fbf9A"
-  // );
-
-  // await deployer.deploy(
-  //   PablockMultiSignFactory,
-  //   // "0x0891c7c2900dd52fE5B0218A896631cc6340786E"
-  //   "0x199DA9C3b0801945c6953ee962dF18f339aB5432"
-  // );
-
-  // await deployer.deploy(PablockToken, 1000000000);
 
   console.log("Finished 2/3 migrations files");
 };

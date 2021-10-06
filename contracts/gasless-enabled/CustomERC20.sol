@@ -11,6 +11,7 @@ import "./PablockToken.sol";
 contract CustomERC20 is ERC20 {
     address contractOwner;
     uint256 MAX_ALLOWANCE = 2 ^ (256 - 1);
+    uint256 DECIMALS = 18;
 
     bytes32 public immutable PERMIT_TYPEHASH = keccak256("Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)");
     bytes32 public immutable TRANSFER_TYPEHASH = keccak256("Transfer(address from,address to,uint256 amount)");
@@ -71,7 +72,7 @@ contract CustomERC20 is ERC20 {
         // );
 
         PablockToken(pablockTokenAddress).receiveAndBurn(1, contractOwner);
-        _mint(to, mintQuantity);
+        _mint(to, mintQuantity * 10 ** DECIMALS);
 
 
         // require(
@@ -109,13 +110,13 @@ contract CustomERC20 is ERC20 {
 
         address signer = ecrecover(hash, v, r, s);
 
-        require(allowance(from, signer) >= amount , "ERC20: Spender not allowed");
+        require(allowance(from, signer) >= amount * 10 ** DECIMALS , "ERC20: Spender not allowed");
         PablockToken(pablockTokenAddress).receiveAndBurn(1, contractOwner);
 
         if(to == address(0)) {
-            _burn(from, amount);
+            _burn(from, amount* 10 ** DECIMALS);
         } else {
-            _transfer(from, to, amount);
+            _transfer(from, to, amount* 10 ** DECIMALS);
         }
 
        
@@ -124,8 +125,8 @@ contract CustomERC20 is ERC20 {
     function transferFrom(address from, address to, uint256 amount) public override isDelegated returns (bool){
         PablockToken(pablockTokenAddress).receiveAndBurn(1, contractOwner);
         if(to == address(0)){
-            _burn(from, amount);
-        } else{_transfer(from, to, amount);}
+            _burn(from, amount* 10 ** DECIMALS);
+        } else{_transfer(from, to, amount* 10 ** DECIMALS);}
         return true;
     }
 
@@ -162,8 +163,7 @@ contract CustomERC20 is ERC20 {
 
         address signer = ecrecover(hash, v, r, s);
 
-      
-
+    
         require(
             signer != address(0) && signer == owner,
             "ERC20Permit: invalid signature"
@@ -171,13 +171,11 @@ contract CustomERC20 is ERC20 {
 
         // require(verifySignature( hash, v, r, s) == owner, "ERC20: Invalid signature");
         PablockToken(pablockTokenAddress).receiveAndBurn(1, contractOwner);
-        nonces[owner]++;
-
         
         if(msg.sender != spender){
-            _approve(owner, msg.sender, amount);       
+            _approve(owner, msg.sender, amount * 10 ** DECIMALS );       
         }
-        _approve(owner, spender, amount);
+        _approve(owner, spender, amount * 10 ** DECIMALS);
 
     }
 

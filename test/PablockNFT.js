@@ -35,9 +35,6 @@ contract("PablockNFT", function (accounts) {
       "Pablock token has not been paid"
     );
   });
-  it(() => async () => {
-    const pablockNFTInstance = await PablockNFT.deployed();
-  });
   it("should be possible to transfer an NFT", async () => {
     const pablockNFTInstance = await PablockNFT.deployed();
 
