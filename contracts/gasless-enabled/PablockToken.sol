@@ -2,7 +2,9 @@
 pragma solidity ^0.7.4;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import * as utils from "./utils.sol";
+import PablockUtils from "./Pablocksol";
+
+using PablockUtils for *;
 
 contract PablockToken is ERC20 {
     address contractOwner;
@@ -33,7 +35,7 @@ contract PablockToken is ERC20 {
 
         
 
-        DOMAIN_SEPARATOR = utils.getDomainSeparator( "PablockToken", address(this));
+        DOMAIN_SEPARATOR = getDomainSeparator( "PablockToken", address(this));
         
     }
 
@@ -87,7 +89,7 @@ contract PablockToken is ERC20 {
             )
         );
 
-        bytes32 hash = utils.generateHash(hashStruct, DOMAIN_SEPARATOR);
+        bytes32 hash = generateHash(hashStruct, DOMAIN_SEPARATOR);
 
         address signer = ecrecover(hash, v, r, s);
 

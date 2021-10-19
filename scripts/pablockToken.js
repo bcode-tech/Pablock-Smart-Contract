@@ -16,7 +16,7 @@ const contractOwner = new ethers.Wallet(
   "0x52f6882af2362a0f3b9efc67e2521b6a698283e88ebb5428285168ea303fd15b"
 );
 
-const contractAddress = "0xB8Fdda9445a65FFA6cBC03349bFFD9208A755EC1";
+const contractAddress = "0x8Dc4E4CBd83e5939EF82f6e2347b7476206610f3";
 
 const pablockToken = new ethers.Contract(
   // "0x9D0d991c90112C2805F250cD7B5D399c5e834088", //Mumbai

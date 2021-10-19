@@ -44,14 +44,14 @@ module.exports = async function (deployer, network) {
       //   pablockToken.address
       // );
 
-      // const pablockNotarization = await deployer.deploy(
-      //   PablockNotarization,
-      //   pablockToken.address
-      // );
-      // console.log(
-      //   "PABLOCK NOTARIZATION CONTRACT:",
-      //   pablockNotarization.address
-      // );
+      const pablockNotarization = await deployer.deploy(
+        PablockNotarization,
+        pablockToken.address
+      );
+      console.log(
+        "PABLOCK NOTARIZATION CONTRACT:",
+        pablockNotarization.address
+      );
 
       // const pablockNFT = await deployer.deploy(
       //   PablockNFT,
@@ -81,9 +81,9 @@ module.exports = async function (deployer, network) {
         // "0x3EDCA10Df9E81A812ccf79ff10baAC67337680D6", // MultiSign
         // "0xB8Fdda9445a65FFA6cBC03349bFFD9208A755EC1", // CustomERC20
       ];
-      for (const addr of contractsAddress) {
-        await pablockToken.addContractToWhitelist(addr);
-      }
+      // for (const addr of contractsAddress) {
+      //   await pablockToken.addContractToWhitelist(addr);
+      // }
     }
   });
 
