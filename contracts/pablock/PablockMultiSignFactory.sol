@@ -7,18 +7,19 @@ import "./PablockToken.sol";
 contract PablockMultiSignFactory {
 
    address private contractOwner;
-   address private pablockTokenAddress;
+   address private metaTxAddress;
    
    event NewPablockMultiSignNotarization(address multiSignAddress);
 
-   constructor(address _pablockTokenAddress){
-       contractOwner = msg.sender;
-       pablockTokenAddress = _pablockTokenAddress;
+   constructor(address _metaTxAddress){
+        contractOwner = msg.sender;
+        metaTxAddress = _metaTxAddress;
+
+        EIP712MetaTransaction(_metaTxAddress).registerContract("PablockMultiSignFactory", "0.1.1", address(this));
    }
     
    function createNewMultiSignNotarization(bytes32 hash, address[] memory signers, string memory uri, uint256 expirationDate) public initialized {//returns (PablockMultiSignNotarization){
         
-        PablockToken(pablockTokenAddress).receiveAndBurn(2, msg.sender);
 
         PablockMultiSignNotarization _multiSign =
             new PablockMultiSignNotarization(
@@ -26,7 +27,7 @@ contract PablockMultiSignFactory {
                 signers,
                 uri,
                 expirationDate, 
-                pablockTokenAddress
+                metaTxAddress
             );
         emit NewPablockMultiSignNotarization(address(_multiSign));
 
@@ -40,12 +41,12 @@ contract PablockMultiSignFactory {
     }
     
     modifier initialized {
-        require(pablockTokenAddress != address(0), "Contract not initialized");
+        require(metaTxAddress != address(0), "Contract not initialized");
         _;
     }
 
     function initialize (address contractAddr) public byOwner {
-        pablockTokenAddress = contractAddr;
+        metaTxAddress = contractAddr;
     }
 
     function getVersion() public pure returns (string memory){

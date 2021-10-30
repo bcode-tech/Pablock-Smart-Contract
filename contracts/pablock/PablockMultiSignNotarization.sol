@@ -3,12 +3,14 @@
 pragma solidity ^0.7.4;
 
 import "./PablockToken.sol";
+import "../EIP712MetaTransaction.sol";
+
 pragma experimental ABIEncoderV2;
 
 contract PablockMultiSignNotarization {
 
 
-    address private pablockTokenAddress;
+    address private metaTxAddress;
     
 
     struct Signer {
@@ -27,9 +29,9 @@ contract PablockMultiSignNotarization {
     Signer[] private signers;
 
     
-    constructor (bytes32 _hash, address[] memory _signers, string memory _uri, uint256 _expirationDate, address _pablockTokenAddress ) public {
+    constructor (bytes32 _hash, address[] memory _signers, string memory _uri, uint256 _expirationDate, address _metaTxAddress ) public {
         hash = _hash;
-        pablockTokenAddress = _pablockTokenAddress;
+        metaTxAddress = _metaTxAddress;
         uri = _uri;
         // expirationDate = _expirationDate;
 
@@ -38,13 +40,11 @@ contract PablockMultiSignNotarization {
             indexOfSigners[_signers[i]] = i;
         }
 
-
+        EIP712MetaTransaction(_metaTxAddress).registerContract("PablockMultiSignNotarization", "0.2.1", address(this));
     }
 
     function signDocument() public {
         require(signers[indexOfSigners[msg.sender]].initialized, "Signers does not exists");
-
-        PablockToken(pablockTokenAddress).receiveAndBurn(1, msg.sender);
 
         signers[indexOfSigners[msg.sender]].signed = true;
     }
