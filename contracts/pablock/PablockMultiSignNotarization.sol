@@ -2,7 +2,6 @@
 
 pragma solidity ^0.7.4;
 
-import "./PablockToken.sol";
 import "../EIP712MetaTransaction.sol";
 
 pragma experimental ABIEncoderV2;

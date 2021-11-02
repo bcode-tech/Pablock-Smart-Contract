@@ -2,7 +2,6 @@
 pragma solidity ^0.7.4;
 
 import "./PablockMultiSignNotarization.sol";
-import "./PablockToken.sol";
 
 contract PablockMultiSignFactory {
 

@@ -2,26 +2,14 @@
 pragma solidity ^0.7.4;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-// import "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/draft-ERC20PermitUpgradeable.sol";
-
-import "./PablockToken.sol";
-
-// import {ERC20, ERC20Permit} from "erc20permit/contracts/ERC20Permit.sol";
+import "../EIP712MetaTransaction.sol";
 
 contract CustomERC20 is ERC20 {
     address contractOwner;
     uint256 MAX_ALLOWANCE = 2 ^ (256 - 1);
     uint256 DECIMALS = 18;
 
-    bytes32 public immutable PERMIT_TYPEHASH = keccak256("Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)");
-    bytes32 public immutable TRANSFER_TYPEHASH = keccak256("Transfer(address from,address to,uint256 amount)");
-
-    bytes32 public immutable DOMAIN_SEPARATOR;
-
-    address private pablockTokenAddress;
-
-
-    mapping(address => uint256) private nonces;
+    address private metaTransactionAddress;
 
     mapping(address => bool) private delegates;
 
@@ -40,29 +28,19 @@ contract CustomERC20 is ERC20 {
         _;
     }
             
-    constructor (string memory _name, string memory _symbol, address  _owner, address _delegate, address _pablockTokenAddress) ERC20(_name, _symbol) {
+    constructor (string memory _name, string memory _symbol, address  _owner, address _delegate, address _metaTransactionAddress) ERC20(_name, _symbol) {
         contractOwner = _owner;
         delegates[_delegate] = true;
         delegates[msg.sender] = true;
-        pablockTokenAddress = _pablockTokenAddress;
-
-        uint256 chainId = getChainId();
-        
-        DOMAIN_SEPARATOR = keccak256(
-            abi.encode(
-                keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
-                keccak256(bytes(_name)),
-                keccak256(bytes("1")),
-                chainId,
-                address(this)
-            )
-        );
+        metaTransactionAddress = _metaTransactionAddress;
 
         // _mint(address(this), maxSupply);
+
+        EIP712MetaTransaction(_metaTransactionAddress).registerContract(_name, "0.1.0", address(this));
     }
 
     function initialize (address contractAddr) public isDelegated {
-        pablockTokenAddress = contractAddr;
+        metaTransactionAddress = contractAddr;
     }
 
     function mint(address to, uint256 mintQuantity) public isDelegated {
@@ -71,10 +49,8 @@ contract CustomERC20 is ERC20 {
         //     "Would exceed max supply"
         // );
 
-        PablockToken(pablockTokenAddress).receiveAndBurn(1, contractOwner);
         _mint(to, mintQuantity * 10 ** DECIMALS);
-
-
+        
         // require(
         //     balanceOf(address(this)) >= mintQuantity,
         //     "Would exceed max supply"
@@ -94,36 +70,7 @@ contract CustomERC20 is ERC20 {
         contractOwner = _newOwner;
     }
 
-    function transferToken( address from, address to, address spender, uint256 amount, uint8 v, bytes32 r, bytes32 s ) public isDelegated  {
-        
-        bytes32 hashStruct = keccak256(
-            abi.encode(
-                TRANSFER_TYPEHASH,
-                from,
-                to,
-                amount,
-                nonces[spender]++
-            )
-        );
-
-        bytes32 hash = generateHash(hashStruct);
-
-        address signer = ecrecover(hash, v, r, s);
-
-        require(allowance(from, signer) >= amount * 10 ** DECIMALS , "ERC20: Spender not allowed");
-        PablockToken(pablockTokenAddress).receiveAndBurn(1, contractOwner);
-
-        if(to == address(0)) {
-            _burn(from, amount* 10 ** DECIMALS);
-        } else {
-            _transfer(from, to, amount* 10 ** DECIMALS);
-        }
-
-       
-    }
-
     function transferFrom(address from, address to, uint256 amount) public override isDelegated returns (bool){
-        PablockToken(pablockTokenAddress).receiveAndBurn(1, contractOwner);
         if(to == address(0)){
             _burn(from, amount* 10 ** DECIMALS);
         } else{_transfer(from, to, amount* 10 ** DECIMALS);}
@@ -137,66 +84,6 @@ contract CustomERC20 is ERC20 {
     function getVersion() public pure returns (string memory){
         return "CustomToken version 0.1.0";
     }
-    
-    function getChainId() public view returns (uint256 chain){
-        uint256 chainId;
-        assembly {
-            chainId := chainid()
-        }
-        return chainId;
-    }
-
-    function requestPermit(address owner, address spender, uint256 amount, uint256 deadline, uint8 v, bytes32 r, bytes32 s) public {  
-        
-        bytes32 hashStruct = keccak256(
-            abi.encode(
-                PERMIT_TYPEHASH,
-                owner,
-                spender,
-                amount,
-                nonces[owner]++,
-                deadline
-            )
-        );
-
-        bytes32 hash = generateHash(hashStruct);
-
-        address signer = ecrecover(hash, v, r, s);
-
-    
-        require(
-            signer != address(0) && signer == owner,
-            "ERC20Permit: invalid signature"
-        );
-
-        // require(verifySignature( hash, v, r, s) == owner, "ERC20: Invalid signature");
-        PablockToken(pablockTokenAddress).receiveAndBurn(1, contractOwner);
-        
-        if(msg.sender != spender){
-            _approve(owner, msg.sender, amount * 10 ** DECIMALS );       
-        }
-        _approve(owner, spender, amount * 10 ** DECIMALS);
-
-    }
-
-
-    function verifySignature( bytes32 hash, uint8 v, bytes32 r, bytes32 s) public pure returns (address signer){
-        
-        return ecrecover(hash, v, r, s);
-
-    }
-
-    function getNonces(address addr) external view returns(uint256){
-        return nonces[addr];
-    }
-
-    function generateHash(bytes32 hashStruct) private returns (bytes32 hash){
-        return keccak256(
-            abi.encodePacked(
-                '\x19\x01',
-                DOMAIN_SEPARATOR,
-                hashStruct
-            )
-        );
-    }
 }
+ 
+

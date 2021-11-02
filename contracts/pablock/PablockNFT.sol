@@ -2,8 +2,6 @@
 pragma solidity ^0.7.4;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "./PablockToken.sol";
-
 import "../EIP712MetaTransaction.sol";
 
 
@@ -18,7 +16,7 @@ contract PablockNFT is ERC721 {
 
     event TokenGeneration(address indexed from, string indexed uri, uint[] indexes) ;
 
-    constructor(string memory _tokenName, string memory _tokenSymbol, address _metaTxAddress) ERC721(_tokenName, _tokenSymbol){
+    constructor(string memory _tokenName, string memory _tokenSymbol, address _metaTxAddress) public ERC721(_tokenName, _tokenSymbol){
         counter = 0;
         metaTxAddress = _metaTxAddress;
         contractOwner = msg.sender;

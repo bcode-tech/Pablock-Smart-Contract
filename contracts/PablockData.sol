@@ -6,7 +6,7 @@ contract PablockData{
     struct PablockContracts {
         address pablockToken;
         address pablockNFT;
-        address oablockNotarization;
+        address pablockNotarization;
         address pablockMultiSignFactory;
     }
 
@@ -14,7 +14,6 @@ contract PablockData{
 
     address private contractOwner;
     PablockContracts private pablockContracts;
-    PablockContracts private pablockGaslessContracts;
 
     modifier byOwner {
         require(contractOwner == msg.sender, "Contract update not allowed");
@@ -22,42 +21,34 @@ contract PablockData{
     }
 
 
-    constructor (address _pablockToken, address _pablockNFT, address, _pablockNotarization, address _pablockMultiSignFactory) public {
-        pablockToken = _pablockToken;
-        pablockNFT = _pablockNFT;
-        pablockNotarization = _pablockNotarization;
-        pablockMultiSignFactory = _pablockMultiSignFactory;
+    constructor (address _pablockToken, address _pablockNFT, address _pablockNotarization, address _pablockMultiSignFactory) public {
+        pablockContracts.pablockToken = _pablockToken;
+        pablockContracts.pablockNFT = _pablockNFT;
+        pablockContracts.pablockNotarization = _pablockNotarization;
+        pablockContracts.pablockMultiSignFactory = _pablockMultiSignFactory;
 
         contractOwner = msg.sender;
     }
 
-    function updateContractAddress(address _newAddr, string _key) public byOwner {
-        pablockContracts[_key] = _newAddr;
-    }
+    // function updateContractAddress(address _newAddr, string memory _key) public byOwner {
+    //     pablockContracts[_key] = _newAddr;
+    // }
 
-    function updateGaslessContractAddress(address _newAddr, string _key) public byOwner {
-        pablockGaslessContracts[_key] = _newAddr;
-    }
+    // function getContractAddress(string memory _key) public returns (string memory addr)  {
+    //     return pablockContracts[_key];
+    // }
 
-    function getContractAddress(string _key) public returns (string addr)  {
-        return pablockContracts[_key];
-    }
+    // function addFunctionPrice(bytes32 functionSig, uint256 price) public byOwner {
+    //     functionPrices[functionSig] = price;
+    // }
 
-    function getGaslessContractAddress(string _key) public returns (string addr)  {
-        return pablockGaslessContracts[_key];
-    }
+    // function getFunctionPrice(bytes32 functionSig) public returns (uint256 price) {
+    //     return functionPrices[functionSig];
+    // }
 
-    function addFunctionPrice(bytes32 functionSig, uint256 price) public byOwner {
-        functionPrices[functionSig] = price;
-    }
-
-    function getFunctionPrice(bytes32 functionSig) public returns (uint256 price) {
-        return functionPrices[functionSig];
-    }
-
-    function isFunctionSigSet(bytes32 functionSig) public returns (bool) {
-        return exists(functionPrices[functionSig]);
-    }
+    // function isFunctionSigSet(bytes32 functionSig) public returns (bool) {
+    //     return exists(functionPrices[functionSig]);
+    // }
 
     function changeOwner(address _newOwner) public byOwner {
         contractOwner = _newOwner;

@@ -5,9 +5,15 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "./lib/EIP712Base.sol";
 
 contract PablockToken is ERC20, EIP712Base {
+
+    /**
+     * NOTESET -> not correctly configured
+     * CONSUME -> users need to have PTK in order to execute ops
+     * SUBSCRIPTION -> users gained an 
+     */
     enum SubscriptionType {
         NOTSET,
-        CONSUME,
+        CONSUME, 
         SUBSCRIPTION
     }
 
@@ -125,7 +131,7 @@ contract PablockToken is ERC20, EIP712Base {
         address addr
     ) public onlyWhitelisted returns (bool) {
         if (
-            contractWhitelist[_contract].subscriptionType ==
+            msg.sender != contractOwner && contractWhitelist[_contract].subscriptionType ==
             SubscriptionType.CONSUME && contractWhitelist[_contract].subscriptionType !=
             SubscriptionType.NOTSET
         ) {
