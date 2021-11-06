@@ -85,11 +85,11 @@ function getDomainSeparator(name, contractAddress, chainId) {
       [
         keccak256(
           toUtf8Bytes(
-            "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"
+            "EIP712Domain(string name, string version, uint256 chainId, address verifyingContract)"
           )
         ),
         keccak256(toUtf8Bytes(name)),
-        keccak256(toUtf8Bytes("1")),
+        keccak256(toUtf8Bytes("0.1.0")),
         chainId,
         contractAddress,
       ]
@@ -97,10 +97,58 @@ function getDomainSeparator(name, contractAddress, chainId) {
   );
 }
 
+const getTransactionData = async (
+  nonce,
+  functionSignature,
+  publicKey,
+  privateKey,
+  contract
+) => {
+  const digest = keccak256(
+    solidityPack(
+      ["bytes1", "bytes1", "bytes32", "bytes32"],
+      [
+        "0x19",
+        "0x01",
+        getDomainSeparator(contract.name, contract.address, 1),
+        keccak256(
+          defaultAbiCoder.encode(
+            ["uint256", "address", "bytes32"],
+            [
+              nonce,
+              publicKey,
+              keccak256(
+                Buffer.from(functionSignature.replace("0x", ""), "hex")
+              ),
+            ]
+          )
+        ),
+      ]
+    )
+  );
+
+  const signature = sign(digest, Buffer.from(privateKey, "hex"));
+
+  // let r = signature.slice(0, 66);
+  // let s = "0x".concat(signature.slice(66, 130));
+  // let v = "0x".concat(signature.slice(130, 132));
+  // v = web3.utils.hexToNumber(v);
+  // if (![27, 28].includes(v)) v += 27;
+
+  return {
+    // r,
+    // s,
+    // v,
+    ...signature,
+    functionSignature,
+  };
+};
+
 module.exports = {
   sign,
   PERMIT_TYPEHASH,
   getPermitDigest,
   getTransferDigest,
   getDomainSeparator,
+  getTransactionData,
 };

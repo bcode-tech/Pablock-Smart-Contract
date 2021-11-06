@@ -4,11 +4,14 @@ pragma solidity ^0.7.4;
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "../EIP712MetaTransaction.sol";
 
+import "../PablockToken.sol";
+
 
 contract PablockNFT is ERC721 {
     
     address private contractOwner;
     address private metaTxAddress;
+    address private pablockTokenAddress;
     uint256 private counter;
 
     mapping(address => uint256) private nonces;
@@ -16,8 +19,9 @@ contract PablockNFT is ERC721 {
 
     event TokenGeneration(address indexed from, string indexed uri, uint[] indexes) ;
 
-    constructor(string memory _tokenName, string memory _tokenSymbol, address _metaTxAddress) public ERC721(_tokenName, _tokenSymbol){
+    constructor(string memory _tokenName, string memory _tokenSymbol,address _pablockTokenAddress, address _metaTxAddress) public ERC721(_tokenName, _tokenSymbol){
         counter = 0;
+        pablockTokenAddress = _pablockTokenAddress;
         metaTxAddress = _metaTxAddress;
         contractOwner = msg.sender;
 
@@ -51,12 +55,17 @@ contract PablockNFT is ERC721 {
             indexes[i] = counter;
             counter++;
         }
+        
+        PablockToken(pablockTokenAddress).receiveAndBurn(address(this), msg.sig, to);
+
 
         emit TokenGeneration(msg.sender, _uri, indexes);
     }
 
     function transferFrom(address from, address to, uint256 tokenId) override public initialized {
         
+        PablockToken(pablockTokenAddress).receiveAndBurn(address(this), msg.sig, from);
+
         _transfer(from, to, tokenId);
               
     }

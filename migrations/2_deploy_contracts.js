@@ -9,6 +9,7 @@ const PablockMultiSignFactory = artifacts.require(
 
 //Custom contracts
 const CustomERC20 = artifacts.require("CustomERC20.sol");
+const TestMetaTransaction = artifacts.require("TestMetaTransaction.sol");
 
 //MetaTransaction Contract
 const MetaTransaction = artifacts.require("EIP712MetaTransaction.sol");
@@ -18,7 +19,6 @@ module.exports = async function (deployer, network) {
 
   deployer.then(async () => {
     const pablockToken = await deployer.deploy(PablockToken, 1000000000);
-    console.log("PABLOCK TOKEN CONTRACT:", pablockToken.address);
 
     // const pablockToken = {
     //   // address: "0x9D0d991c90112C2805F250cD7B5D399c5e834088", //MUMBAI
@@ -55,8 +55,17 @@ module.exports = async function (deployer, network) {
       //   pablockToken.address
       // );
 
+      const testMetaTransaction = await deployer.deploy(
+        TestMetaTransaction,
+        "TestMetaTransaction",
+        "0.0.1",
+        pablockToken.address,
+        metaTransaction.address
+      );
+
       const pablockNotarization = await deployer.deploy(
         PablockNotarization,
+        pablockToken.address,
         metaTransaction.address
       );
 
@@ -76,41 +85,20 @@ module.exports = async function (deployer, network) {
       await pablockToken.addContractToWhitelist(
         pablockNotarization.address,
         1,
-        1
+        3
       );
-      await pablockToken.addContractToWhitelist(pablockNFT.address, 1, 1);
-      await pablockToken.addContractToWhitelist(multisignFactory.address, 1, 1);
+      await pablockToken.addContractToWhitelist(pablockNFT.address, 1, 3);
+      await pablockToken.addContractToWhitelist(multisignFactory.address, 1, 3);
+      await pablockToken.addContractToWhitelist(metaTransaction.address, 1, 3);
       // await pablockToken.addContractToWhitelist(customERC20.address);
 
-      //Contract registration on PablocketaTransaction
-      await metaTransaction.registerContract(
-        "PablockNotarization",
-        "0.1.0",
-        pablockNotarization.address
-      );
-      await metaTransaction.registerContract(
-        "PablockNFT",
-        "0.2.1",
-        pablockNFT.address
-      );
-      await metaTransaction.registerContract(
-        "PablockMultiSignFactory",
-        "0.1.1",
-        multisignFactory.address
-      );
-
-      console.log("PABLOCK TOKEN CONTRACT:", pablockToken.address);
-      console.log("PABLOCK META TRANSACTION: ", metaTransaction.address);
+      console.log("PABLOCK_TOKEN_ADDRESS=", pablockToken.address);
+      console.log("PABLOCK_META_TRANSACTION=", metaTransaction.address);
       // console.log("CUSTOMERC20 TOKEN ADDRESS: ", customERC20.address);
-      console.log(
-        "PABLOCK NOTARIZATION CONTRACT:",
-        pablockNotarization.address
-      );
-      console.log("PABLOCK NFT CONTRACT:", pablockNFT.address);
-      console.log(
-        "PABLOCK MULTISIGN FACTORY CONTRACT:",
-        multisignFactory.address
-      );
+      console.log("PABLOCK_NOTARIZATION=", pablockNotarization.address);
+      console.log("PABLOCK_NFT=", pablockNFT.address);
+      console.log("PABLOCK_MULTISIGN_FACTORY=", multisignFactory.address);
+      console.log("TEST_META_TX=", testMetaTransaction.address);
 
       const contractsAddress = [
         // "0xF99b4Aef511E395958d254beF144866Ab4959287", // Notarization

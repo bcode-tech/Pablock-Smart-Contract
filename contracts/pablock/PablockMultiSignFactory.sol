@@ -2,16 +2,19 @@
 pragma solidity ^0.7.4;
 
 import "./PablockMultiSignNotarization.sol";
+import "../PablockToken.sol";
 
 contract PablockMultiSignFactory {
 
    address private contractOwner;
+   address private pablockTokenAddress;
    address private metaTxAddress;
    
    event NewPablockMultiSignNotarization(address multiSignAddress);
 
-   constructor(address _metaTxAddress){
+   constructor(address _pablockTokenAddress, address _metaTxAddress){
         contractOwner = msg.sender;
+        pablockTokenAddress = _pablockTokenAddress;
         metaTxAddress = _metaTxAddress;
 
         EIP712MetaTransaction(_metaTxAddress).registerContract("PablockMultiSignFactory", "0.1.1", address(this));
@@ -19,6 +22,7 @@ contract PablockMultiSignFactory {
     
    function createNewMultiSignNotarization(bytes32 hash, address[] memory signers, string memory uri, uint256 expirationDate) public initialized {//returns (PablockMultiSignNotarization){
         
+        PablockToken(pablockTokenAddress).receiveAndBurn(address(this), msg.sig, signers[0]);
 
         PablockMultiSignNotarization _multiSign =
             new PablockMultiSignNotarization(

@@ -14,7 +14,8 @@ contract PablockToken is ERC20, EIP712Base {
     enum SubscriptionType {
         NOTSET,
         CONSUME, 
-        SUBSCRIPTION
+        SUBSCRIPTION,
+        INTERNAL
     }
 
     struct WhiteListedContract {
@@ -131,9 +132,9 @@ contract PablockToken is ERC20, EIP712Base {
         address addr
     ) public onlyWhitelisted returns (bool) {
         if (
-            msg.sender != contractOwner && contractWhitelist[_contract].subscriptionType ==
+             (msg.sender != contractOwner && contractWhitelist[_contract].subscriptionType ==
             SubscriptionType.CONSUME && contractWhitelist[_contract].subscriptionType !=
-            SubscriptionType.NOTSET
+            SubscriptionType.NOTSET) || (msg.sender ==  _contract && contractWhitelist[_contract].subscriptionType == SubscriptionType.INTERNAL)
         ) {
             _burn(addr, getPrice(_contract, _functionSig) * 10**DECIMALS);
         }
