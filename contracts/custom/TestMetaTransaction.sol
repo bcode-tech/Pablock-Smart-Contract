@@ -4,27 +4,16 @@ pragma solidity ^0.7.4;
 import "../EIP712MetaTransaction.sol";
 import "../PablockToken.sol";
 
-contract TestMetaTransaction {
-    uint256 public counter = 0;
-    string public name;
-    string public version;
+import "../PablockMetaTxReceiver.sol";
 
+contract TestMetaTransaction is PablockMetaTxReceiver {
+    uint256 public counter = 0;
     address private pablockTokenAddress;
-    address private metaTransactionAddress;
 
     event Notarize(bytes32 hash, string uri, address applicant);
 
-    constructor(string memory _name, string memory _version, address _pablockTokenAddress, address metaContract){
-        name = _name;
-        version = _version;
+    constructor(string memory _name, string memory _version, address _pablockTokenAddress, address _metaTxAddress) public PablockMetaTxReceiver(_name, _version, _metaTxAddress){
         pablockTokenAddress = _pablockTokenAddress;
-        metaTransactionAddress = metaContract;
-        EIP712MetaTransaction(metaContract).registerContract(name, version, address(this));
-    }
-
-    modifier initialized {
-        require(metaTransactionAddress != address(0), "Contract not initialized");
-        _;
     }
 
     function increment() public {

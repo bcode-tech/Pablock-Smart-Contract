@@ -12,6 +12,7 @@ contract EIP712Base {
     struct RegisteredContract {
         string name;
         string version;
+        bool registered;
     }
 
     mapping(address => RegisteredContract ) private registeredContracts;
@@ -39,6 +40,7 @@ contract EIP712Base {
     function registerContract(string memory name, string memory version, address contractAddress) public {
         registeredContracts[contractAddress].name = name;
         registeredContracts[contractAddress].version = version;
+        registeredContracts[contractAddress].registered = true;
     }
 
     function getChainID() internal pure returns (uint256 id) {

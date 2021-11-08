@@ -2,30 +2,28 @@
 pragma solidity ^0.7.4;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "../EIP712MetaTransaction.sol";
 
+import "../PablockMetaTxReceiver.sol";
 import "../PablockToken.sol";
 
 
-contract PablockNFT is ERC721 {
+contract PablockNFT is ERC721, PablockMetaTxReceiver {
     
     address private contractOwner;
-    address private metaTxAddress;
     address private pablockTokenAddress;
     uint256 private counter;
 
     mapping(address => uint256) private nonces;
+    mapping(uint256 =>  bool) private unlockedTokens;
 
 
     event TokenGeneration(address indexed from, string indexed uri, uint[] indexes) ;
 
-    constructor(string memory _tokenName, string memory _tokenSymbol,address _pablockTokenAddress, address _metaTxAddress) public ERC721(_tokenName, _tokenSymbol){
+    constructor(string memory _tokenName, string memory _tokenSymbol,address _pablockTokenAddress, address _metaTxAddress) public ERC721(_tokenName, _tokenSymbol) PablockMetaTxReceiver(_tokenName, "0.2.1",  _metaTxAddress){
         counter = 0;
-        pablockTokenAddress = _pablockTokenAddress;
-        metaTxAddress = _metaTxAddress;
         contractOwner = msg.sender;
 
-        EIP712MetaTransaction(_metaTxAddress).registerContract(_tokenName, "0.2.1", address(this));
+        pablockTokenAddress = _pablockTokenAddress;
     }
 
     modifier byOwner(){
@@ -34,16 +32,15 @@ contract PablockNFT is ERC721 {
     }
     
     modifier initialized {
-        require(metaTxAddress != address(0), "Contract not initialized");
+        require(pablockTokenAddress != address(0), "Contract not initialized");
         _;
     }
 
     function initialize (address contractAddr) public byOwner {
-        metaTxAddress = contractAddr;
+        pablockTokenAddress = contractAddr;
     }
 
-    function generateToken(address to, uint quantity, string memory _uri) public initialized {
-
+    function mintToken(address to, uint quantity, string memory _uri) public initialized returns(uint[] memory indexes) {
 
         uint[] memory indexes = new uint[](quantity);
 
@@ -52,6 +49,7 @@ contract PablockNFT is ERC721 {
         for(uint i = 0; i < quantity; i++ ){
             _safeMint(to, counter);
             _setTokenURI(counter, _uri);
+            unlockedTokens[counter] = false;
             indexes[i] = counter;
             counter++;
         }
@@ -63,11 +61,23 @@ contract PablockNFT is ERC721 {
     }
 
     function transferFrom(address from, address to, uint256 tokenId) override public initialized {
-        
-        PablockToken(pablockTokenAddress).receiveAndBurn(address(this), msg.sig, from);
+
+        if(!unlockedTokens[tokenId]){ 
+           PablockToken(pablockTokenAddress).receiveAndBurn(address(this), msg.sig, from);
+        }
 
         _transfer(from, to, tokenId);
               
+    }
+
+    function unlockToken(uint256 tokenId) public initialized{
+        require(ownerOf(tokenId) == msgSender());
+
+        unlockedTokens[tokenId] = true;
+    }
+
+    function isUnlocked(uint256 tokenId) public view returns(bool){
+        return unlockedTokens[tokenId];
     }
 
 

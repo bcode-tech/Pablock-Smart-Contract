@@ -129,19 +129,7 @@ const getTransactionData = async (
 
   const signature = sign(digest, Buffer.from(privateKey, "hex"));
 
-  // let r = signature.slice(0, 66);
-  // let s = "0x".concat(signature.slice(66, 130));
-  // let v = "0x".concat(signature.slice(130, 132));
-  // v = web3.utils.hexToNumber(v);
-  // if (![27, 28].includes(v)) v += 27;
-
-  return {
-    // r,
-    // s,
-    // v,
-    ...signature,
-    functionSignature,
-  };
+  return signature;
 };
 
 module.exports = {
