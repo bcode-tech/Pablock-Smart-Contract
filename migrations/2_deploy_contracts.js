@@ -73,11 +73,13 @@ module.exports = async function (deployer, network) {
         PablockNFT,
         "PablockNFT",
         "PTNFT",
+        pablockToken.address,
         metaTransaction.address
       );
 
       const multisignFactory = await deployer.deploy(
         PablockMultiSignFactory,
+        pablockToken.address,
         metaTransaction.address
       );
 

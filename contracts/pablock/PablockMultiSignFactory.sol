@@ -11,7 +11,7 @@ contract PablockMultiSignFactory is PablockMetaTxReceiver {
    
    event NewPablockMultiSignNotarization(address multiSignAddress);
 
-   constructor(address _pablockTokenAddress, address _metaTxAddress) public PablockMetaTxReceiver("PablockMultiSignFactory", "0.1.1", _metaTxAddress){
+   constructor(address _pablockTokenAddress, address _metaTxAddress) PablockMetaTxReceiver("PablockMultiSignFactory", "0.1.1", _metaTxAddress){
         contractOwner = msg.sender;
         pablockTokenAddress = _pablockTokenAddress;
    }

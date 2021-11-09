@@ -26,7 +26,7 @@ let balance = null;
 let pablockTokenInstance = null;
 let metaTransactionInstance = null;
 
-contract("ERC20Permit", async (accounts) => {
+contract("Pablock Notarization", async (accounts) => {
   it("should have token", async () => {
     pablockTokenInstance = await PablockToken.deployed();
     metaTransactionInstance = await MetaTransaction.deployed();

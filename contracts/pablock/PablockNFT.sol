@@ -17,9 +17,9 @@ contract PablockNFT is ERC721, PablockMetaTxReceiver {
     mapping(uint256 =>  bool) private unlockedTokens;
 
 
-    event TokenGeneration(address indexed from, string indexed uri, uint[] indexes) ;
+    event TokenGeneration(address indexed from, string indexed uri, uint[] ) ;
 
-    constructor(string memory _tokenName, string memory _tokenSymbol,address _pablockTokenAddress, address _metaTxAddress) public ERC721(_tokenName, _tokenSymbol) PablockMetaTxReceiver(_tokenName, "0.2.1",  _metaTxAddress){
+    constructor(string memory _tokenName, string memory _tokenSymbol,address _pablockTokenAddress, address _metaTxAddress) ERC721(_tokenName, _tokenSymbol) PablockMetaTxReceiver(_tokenName, "0.2.1",  _metaTxAddress){
         counter = 0;
         contractOwner = msg.sender;
 
@@ -31,7 +31,7 @@ contract PablockNFT is ERC721, PablockMetaTxReceiver {
         _;
     }
     
-    modifier initialized {
+    modifier isInitialized {
         require(pablockTokenAddress != address(0), "Contract not initialized");
         _;
     }
@@ -40,9 +40,9 @@ contract PablockNFT is ERC721, PablockMetaTxReceiver {
         pablockTokenAddress = contractAddr;
     }
 
-    function mintToken(address to, uint quantity, string memory _uri) public initialized returns(uint[] memory indexes) {
+    function mintToken(address to, uint quantity, string memory _uri) public isInitialized returns(uint[] memory indexes) {
 
-        uint[] memory indexes = new uint[](quantity);
+        indexes = new uint[](quantity);
 
         // uint[quantity] memory indexes;
 
@@ -60,7 +60,7 @@ contract PablockNFT is ERC721, PablockMetaTxReceiver {
         emit TokenGeneration(msg.sender, _uri, indexes);
     }
 
-    function transferFrom(address from, address to, uint256 tokenId) override public initialized {
+    function transferFrom(address from, address to, uint256 tokenId) override public isInitialized {
 
         if(!unlockedTokens[tokenId]){ 
            PablockToken(pablockTokenAddress).receiveAndBurn(address(this), msg.sig, from);
@@ -70,7 +70,7 @@ contract PablockNFT is ERC721, PablockMetaTxReceiver {
               
     }
 
-    function unlockToken(uint256 tokenId) public initialized{
+    function unlockToken(uint256 tokenId) public isInitialized{
         require(ownerOf(tokenId) == msgSender());
 
         unlockedTokens[tokenId] = true;

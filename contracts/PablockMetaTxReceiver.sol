@@ -6,16 +6,16 @@ import "./EIP712MetaTransaction.sol";
 
 contract PablockMetaTxReceiver {
 
-    string public name;
-    string public version;
+    string metaTxName;
+    string version;
 
     address internal metaTxAddress;
 
     constructor(string memory _name, string memory _version, address metaContract){
-        name = _name;
+        metaTxName = _name;
         version = _version;
         metaTxAddress = metaContract;
-        EIP712MetaTransaction(metaContract).registerContract(name, version, address(this));
+        EIP712MetaTransaction(metaContract).registerContract(metaTxName, version, address(this));
     }
 
     function msgSender() internal view returns (address sender) {

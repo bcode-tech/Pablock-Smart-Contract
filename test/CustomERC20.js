@@ -16,7 +16,7 @@ const privateKeys = [
 
 const deadline = 1657121546000;
 
-contract("ERC20Permit", async (accounts) => {
+contract("Custom ERC20", async (accounts) => {
   it("should set allowance after a permit transaction", async () => {
     const pablockTokenInstance = await PablockToken.deployed();
     const customERC20Instance = await CustomERC20.deployed();
