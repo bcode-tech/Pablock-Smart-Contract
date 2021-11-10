@@ -78,7 +78,7 @@ function getTransferDigest(name, address, chainId, transfer, nonce) {
 }
 
 // Gets the EIP712 domain separator
-function getDomainSeparator(name, contractAddress, chainId) {
+function getDomainSeparator(name, version, contractAddress, chainId) {
   return keccak256(
     defaultAbiCoder.encode(
       ["bytes32", "bytes32", "bytes32", "uint256", "address"],
@@ -89,7 +89,7 @@ function getDomainSeparator(name, contractAddress, chainId) {
           )
         ),
         keccak256(toUtf8Bytes(name)),
-        keccak256(toUtf8Bytes("0.1.0")),
+        keccak256(toUtf8Bytes(version)),
         chainId,
         contractAddress,
       ]
@@ -110,7 +110,12 @@ const getTransactionData = async (
       [
         "0x19",
         "0x01",
-        getDomainSeparator(contract.name, contract.address, 1),
+        getDomainSeparator(
+          contract.name,
+          contract.version,
+          contract.address,
+          1
+        ),
         keccak256(
           defaultAbiCoder.encode(
             ["uint256", "address", "bytes32"],

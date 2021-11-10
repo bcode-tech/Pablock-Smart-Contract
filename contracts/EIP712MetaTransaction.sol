@@ -5,8 +5,6 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 
 import "./PablockToken.sol";
 
-import "hardhat/console.sol";
-
 contract EIP712MetaTransaction is EIP712Base {
     using SafeMath for uint256;
     bytes32 private constant META_TRANSACTION_TYPEHASH =

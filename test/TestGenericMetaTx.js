@@ -4,8 +4,8 @@ const { ethers, BigNumber } = require("ethers");
 const truffleAssert = require("truffle-assertions");
 const web3Abi = require("web3-eth-abi");
 
-const PablockNotarization = artifacts.require(
-  "./pablock/PablockNotarization.sol"
+const TestMetaTransaction = artifacts.require(
+  "./custom/TestMetaTransaction.sol"
 );
 const PablockToken = artifacts.require("./PablockToken.sol");
 const MetaTransaction = artifacts.require("./EIP712MetaTransaction.sol");
@@ -15,14 +15,14 @@ const { expect } = require("chai");
 
 const privateKeys = require("../ganachePrivateKeys.json");
 
-const { abi } = require("../build/contracts/PablockNotarization.json");
+const { abi } = require("../build/contracts/TestMetaTransaction.json");
 
 let balance = null;
 
 let pablockTokenInstance = null;
 let metaTransactionInstance = null;
 
-contract("Pablock Notarization", async (accounts) => {
+contract("Test Meta Transaction", async (accounts) => {
   it("should have token", async () => {
     pablockTokenInstance = await PablockToken.deployed();
     metaTransactionInstance = await MetaTransaction.deployed();
@@ -39,34 +39,31 @@ contract("Pablock Notarization", async (accounts) => {
     }
     expect(balance).equal("5.0");
   });
-  it("should notarize with directly", async () => {
-    const pablockNotarizationInstance = await PablockNotarization.deployed();
+  //   it("should notarize with directly", async () => {
+  //     const pablockNotarizationInstance = await PablockNotarization.deployed();
 
-    let tx = await pablockNotarizationInstance.notarize(
-      "0xb133a0c0e9bee3be20163d2ad31d6248db292aa6dcb1ee087a2aa50e0fc75ae2",
-      "",
-      accounts[1],
-      "",
-      { from: accounts[1] }
-    );
+  //     let tx = await pablockNotarizationInstance.notarize(
+  //       "0xb133a0c0e9bee3be20163d2ad31d6248db292aa6dcb1ee087a2aa50e0fc75ae2",
+  //       "",
+  //       accounts[1],
+  //       "",
+  //       { from: accounts[1] }
+  //     );
 
-    const currentBalance = ethers.utils.formatEther(
-      (await pablockTokenInstance.balanceOf(accounts[1])).toString()
-    );
+  //     const currentBalance = ethers.utils.formatEther(
+  //       (await pablockTokenInstance.balanceOf(accounts[1])).toString()
+  //     );
 
-    expect(currentBalance).equal("4.0");
-  });
-  it("should notarize with meta transaction", async () => {
-    const pablockNotarizationInstance = await PablockNotarization.deployed();
+  //     expect(currentBalance).equal("4.0");
+  //   });
+  it("should increment with meta transaction", async () => {
+    const testMetaTxInstance = await TestMetaTransaction.deployed();
+
+    console.log("ACCOUNTS ==> ", accounts[1]);
 
     const functionSignature = web3Abi.encodeFunctionCall(
-      abi.find((el) => el.type === "function" && el.name === "notarize"),
-      [
-        "0xb133a0c0e9bee3be20163d2ad31d6248db292aa6dcb1ee087a2aa50e0fc75ae2",
-        "",
-        accounts[1],
-        "",
-      ]
+      abi.find((el) => el.type === "function" && el.name === "increment"),
+      []
     );
 
     let nonce = await metaTransactionInstance.getNonce(accounts[1]);
@@ -77,14 +74,14 @@ contract("Pablock Notarization", async (accounts) => {
       accounts[1],
       privateKeys[1],
       {
-        name: "PablockNotarization",
-        version: "0.1.0",
-        address: pablockNotarizationInstance.address,
+        name: "TestMetaTransaction",
+        version: "0.0.1",
+        address: testMetaTxInstance.address,
       }
     );
 
     await metaTransactionInstance.executeMetaTransaction(
-      pablockNotarizationInstance.address,
+      testMetaTxInstance.address,
       accounts[1],
       functionSignature,
       r,
@@ -97,6 +94,6 @@ contract("Pablock Notarization", async (accounts) => {
       (await pablockTokenInstance.balanceOf(accounts[1])).toString()
     );
 
-    expect(currentBalance).equal("3.0");
+    expect(currentBalance).equal("4.0");
   });
 });

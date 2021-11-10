@@ -17,6 +17,7 @@ contract TestMetaTransaction is PablockMetaTxReceiver {
     }
 
     function increment() public {
+        // PablockToken(pablockTokenAddress).receiveAndBurn(address(this), msg.sig, applicant);
         counter = counter + 1;
     }
 
@@ -33,7 +34,7 @@ contract TestMetaTransaction is PablockMetaTxReceiver {
         return counter;
     }
 
-     function notarize(bytes32 hash, string memory uri, address applicant) public initialized {
+    function notarize(bytes32 hash, string memory uri, address applicant) public initialized {
         PablockToken(pablockTokenAddress).receiveAndBurn(address(this), msg.sig, applicant);
         emit Notarize(hash, uri, applicant);
     }

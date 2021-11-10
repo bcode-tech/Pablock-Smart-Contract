@@ -92,7 +92,11 @@ module.exports = async function (deployer, network) {
       await pablockToken.addContractToWhitelist(pablockNFT.address, 1, 3);
       await pablockToken.addContractToWhitelist(multisignFactory.address, 1, 3);
       await pablockToken.addContractToWhitelist(metaTransaction.address, 1, 3);
-      // await pablockToken.addContractToWhitelist(customERC20.address);
+      await pablockToken.addContractToWhitelist(
+        testMetaTransaction.address,
+        1,
+        1
+      );
 
       console.log("PABLOCK_TOKEN_ADDRESS=", pablockToken.address);
       console.log("PABLOCK_META_TRANSACTION=", metaTransaction.address);
