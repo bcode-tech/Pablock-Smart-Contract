@@ -94,7 +94,7 @@ contract EIP712MetaTransaction is EIP712Base {
         
         PablockToken(pablockTokenAddress).receiveAndBurn(destinationContract, destinationFunctionSig, userAddress);
 
-        require(success, "Function call not successful");
+        require(success, string (returnData));
         emit MetaTransactionExecuted(
             userAddress,
             msg.sender,

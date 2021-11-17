@@ -24,3 +24,5 @@ yarn-error.log*
 
 *.secret
 gas_report.txt
+
+ganachePrivateKeys.json
