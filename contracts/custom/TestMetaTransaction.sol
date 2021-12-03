@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.7.4;
+pragma solidity ^0.8.9;
 
 import "../EIP712MetaTransaction.sol";
 import "../PablockToken.sol";
@@ -26,7 +26,7 @@ contract TestMetaTransaction is PablockMetaTxReceiver {
     }
 
     function setCounter(uint256 _counter, address account) public {
-        PablockToken(pablockTokenAddress).receiveAndBurn(address(this),msg.sig, account );
+        PablockToken(pablockTokenAddress).receiveAndBurn(address(this), msg.sig, account );
         counter = _counter;
     }
 

@@ -20,8 +20,7 @@
   "devDependencies": {
     "@nomiclabs/buidler": "^1.4.8",
     "@opengsn/gsn": "^2.1.0",
-    "@openzeppelin/contracts": "^3.4.1",
-    "@soliditylabs/erc20-permit": "^1.0.0",
+    "@openzeppelin/contracts": "^4.4.0",
     "ethereumjs-util": "^7.1.0",
     "ethers": "^5.4.1",
     "ganache-cli": "^6.12.2",
@@ -36,14 +35,13 @@
     "@truffle/hdwallet-provider": "^1.4.0",
     "abi-decoder": "^2.4.0",
     "chai": "^4.3.4",
-    "erc20permit": "github:albertocuestacanada/ERC20Permit",
+    "dotenv": "^10.0.0",
     "eth-gas-reporter": "^0.2.22",
-    "eth-permit": "^0.1.10",
     "ethereumjs-common": "^1.5.2",
     "ethereumjs-tx": "^2.1.2",
     "lodash": "^4.17.21",
+    "scrypt": "^6.0.3",
     "truffle-assertions": "^0.9.2",
-    "web3": "^1.4.0",
-    "dotenv": "^10.0.0"
+    "web3": "^1.4.0"
   }
 }

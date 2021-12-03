@@ -1,13 +1,14 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.7.4;
+pragma solidity ^0.8.9;
 
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 
 import "../PablockMetaTxReceiver.sol";
 import "../PablockToken.sol";
 
 
-contract PablockNFT is ERC721, PablockMetaTxReceiver {
+contract PablockNFT is ERC721Enumerable, ERC721URIStorage,  PablockMetaTxReceiver {
     
     address private contractOwner;
     address private pablockTokenAddress;
@@ -81,13 +82,33 @@ contract PablockNFT is ERC721, PablockMetaTxReceiver {
     }
 
 
-    function getVersion() public view returns (string memory){
+    function getVersion() public pure returns (string memory){
         return "PablockNFT version 0.2.1";
     }
    
     // function getTokensOfOwner(address owner) public view returns(uint256[]){
     //     return _holderTokens[owner];
     // }
+
+    //OVERRIDE FUNCTIONS
+
+     function _beforeTokenTransfer(address from, address to, uint256 amount) internal virtual override(ERC721, ERC721Enumerable) {
+        super._beforeTokenTransfer(from, to, amount);
+    }
+
+      function _burn(uint256 tokenId) internal virtual override(ERC721, ERC721URIStorage) {
+        super._burn(tokenId);
+    }
+
+      function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721, ERC721Enumerable) returns (bool) {
+        super.supportsInterface(interfaceId);
+    }
+
+     function tokenURI(uint256 tokenId) public view virtual override(ERC721, ERC721URIStorage) returns (string memory) {
+        super.tokenURI(tokenId);
+}
+    
+
 
 }
 
