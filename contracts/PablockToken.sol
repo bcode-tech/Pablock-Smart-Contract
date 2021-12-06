@@ -21,7 +21,7 @@ contract PablockToken is ERC20, PablockMetaTxReceiver {
         mapping(bytes4 => uint256) functionPrices;
         mapping(address => bool) allowedAddresses;
         bool profilationEnabled;
-address contractOwner;
+        address contractOwner;
     }
 
     uint256 MAX_ALLOWANCE = 2 ^ (256 - 1);
@@ -33,11 +33,6 @@ address contractOwner;
     uint256 maxSupply;
     bool lockSupply = false;
 
-    bytes32 public immutable PERMIT_TYPEHASH = keccak256(
-        "Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)"
-    );
-
-    // mapping(address => bool) private contractWhitelist;
     mapping(address => WhiteListedContract) private contractWhitelist;
     mapping(address => uint256) private nonces;
 
@@ -46,14 +41,29 @@ address contractOwner;
         _;
     }
 
-    modifier onlyWhitelisted() {
-        require(contractWhitelist[msgSender()].isSet, "Contract not allowed");
+    modifier onlyWhitelisted(address contractAddr) {
+        require(contractWhitelist[contractAddr].isSet, "Contract not allowed");
         _;
     }
 
-    constructor(uint256 _maxSupply)
+    modifier checkProfilation(address _contract) {
+        require(
+            contractWhitelist[_contract].subscriptionType !=
+                SubscriptionType.SUBSCRIPTION ||
+                (contractWhitelist[_contract].subscriptionType ==
+                    SubscriptionType.SUBSCRIPTION &&
+                    !contractWhitelist[_contract].profilationEnabled) ||
+                (contractWhitelist[_contract].subscriptionType ==
+                    SubscriptionType.SUBSCRIPTION &&
+                    contractWhitelist[_contract].allowedAddresses[msgSender()]),
+            "User not allowed to execute function"
+        );
+        _;
+    }
+
+    constructor(uint256 _maxSupply, address _metaTxAddr)
         ERC20("PablockToken", "PTK")
-        PablockMetaTxReceiver("PablockToken", "0.2.3")
+        PablockMetaTxReceiver("PablockToken", "0.2.3", _metaTxAddr)
     {
         contractOwner = msgSender();
         maxSupply = _maxSupply;
@@ -82,6 +92,7 @@ address contractOwner;
         contractWhitelist[_contract].isSet = true;
         contractWhitelist[_contract].defaultPrice = _price;
         contractWhitelist[_contract].subscriptionType = SubscriptionType(_type);
+        contractWhitelist[_contract].contractOwner = msgSender();
     }
 
     function removeContractFromWhitelist(address _contract) public byOwner {
@@ -104,12 +115,27 @@ address contractOwner;
         return contractWhitelist[_contract].functionPrices[_functionSig];
     }
 
-    function setSubUserAddr(address contractAddr, address userAddress, bool status) public {
-        require(contractWhitelist[contractAddr].contractOwner == msgSender(), "Address not authorized");
-        
+    function setSubUserAddr(
+        address contractAddr,
+        address userAddress,
+        bool status
+    ) public {
+        require(
+            contractWhitelist[contractAddr].contractOwner == msgSender(),
+            "Address not authorized"
+        );
+
         _burn(msgSender(), 1 * 10**DECIMALS);
-        
+
         contractWhitelist[contractAddr].allowedAddresses[userAddress] = status;
+    }
+
+    function changeProfilationStatus(address contractAddr, bool status) public {
+        require(
+            contractWhitelist[contractAddr].contractOwner == msgSender(),
+            "Address not authorized"
+        );
+        contractWhitelist[contractAddr].profilationEnabled = status;
     }
 
     function changeOwner(address _newOwner) public byOwner {
@@ -128,7 +154,12 @@ address contractOwner;
         address _contract,
         bytes4 _functionSig,
         address addr
-    ) public onlyWhitelisted returns (bool) {
+    )
+        public
+        onlyWhitelisted(_contract)
+        checkProfilation(_contract)
+        returns (bool)
+    {
         if (
             (msgSender() != contractOwner &&
                 contractWhitelist[_contract].subscriptionType ==
@@ -160,41 +191,6 @@ address contractOwner;
         return contractWhitelist[_contract].isSet;
     }
 
-    function requestPermit(
-        address owner,
-        address spender,
-        uint256 amount,
-        uint256 deadline,
-        uint8 v,
-        bytes32 r,
-        bytes32 s
-    ) public {
-        bytes32 hashStruct = keccak256(
-            abi.encode(
-                PERMIT_TYPEHASH,
-                owner,
-                spender,
-                amount,
-                nonces[owner]++,
-                deadline
-            )
-        );
-
-        bytes32 hash = toTypedMessageHash(hashStruct, address(this));
-
-        address signer = ecrecover(hash, v, r, s);
-
-        require(
-            signer != address(0) && signer == owner,
-            "PTK Permit: invalid signature"
-        );
-
-        if (msgSender() != spender) {
-            _approve(owner, msgSender(), amount * 10**DECIMALS);
-        }
-        _approve(owner, spender, amount * 10**DECIMALS);
-    }
-
     function getNonces(address addr) external view returns (uint256) {
         return nonces[addr];
     }
@@ -202,5 +198,4 @@ address contractOwner;
     function getVersion() public pure returns (string memory) {
         return "PablockToken version 0.2.3";
     }
-
 }

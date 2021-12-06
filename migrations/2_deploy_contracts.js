@@ -18,8 +18,11 @@ module.exports = async function (deployer, network) {
   process.env.NETWORK = deployer.network;
 
   deployer.then(async () => {
-    const pablockToken = await deployer.deploy(PablockToken, 1000000000);
-
+    const metaTransaction = await deployer.deploy(
+      MetaTransaction,
+      "PablockMetaTransaction",
+      "0.1.0"
+    );
     // const pablockToken = {
     //   address: "0xFDF84B11382343FbCe877277aEC42091F34bA25D", //MUMBAI
     //   // address: "0x2b9233683001657161db866c7405493Fc1d1C22d", //LOCAL Legacy
@@ -29,12 +32,11 @@ module.exports = async function (deployer, network) {
     //   address: "0x3FEecd6269D880Fff83bA82ddA90639062377FB3",
     // };
 
-    if (pablockToken.address) {
-      const metaTransaction = await deployer.deploy(
-        MetaTransaction,
-        "PablockMetaTransaction",
-        "0.1.0",
-        pablockToken.address
+    if (metaTransaction.address) {
+      const pablockToken = await deployer.deploy(
+        PablockToken,
+        1000000000,
+        metaTransaction.address
       );
 
       // const customERC20 = await deployer.deploy(
@@ -59,13 +61,13 @@ module.exports = async function (deployer, network) {
       //   pablockToken.address
       // );
 
-      const testMetaTransaction = await deployer.deploy(
-        TestMetaTransaction,
-        "TestMetaTransaction",
-        "0.0.1",
-        pablockToken.address,
-        metaTransaction.address
-      );
+      // const testMetaTransaction = await deployer.deploy(
+      //   TestMetaTransaction,
+      //   "TestMetaTransaction",
+      //   "0.0.1",
+      //   pablockToken.address,
+      //   metaTransaction.address
+      // );
 
       const pablockNotarization = await deployer.deploy(
         PablockNotarization,
@@ -81,12 +83,13 @@ module.exports = async function (deployer, network) {
         metaTransaction.address
       );
 
-      const multisignFactory = await deployer.deploy(
-        PablockMultiSignFactory,
-        pablockToken.address,
-        metaTransaction.address
-      );
+      // const multisignFactory = await deployer.deploy(
+      //   PablockMultiSignFactory,
+      //   pablockToken.address,
+      //   metaTransaction.address
+      // );
 
+      await metaTransaction.initialize(pablockToken.address);
       // Contract whitelisting on PablockToken
       await pablockToken.addContractToWhitelist(pablockToken.address, 1, 3);
       await pablockToken.addContractToWhitelist(
@@ -94,22 +97,28 @@ module.exports = async function (deployer, network) {
         1,
         3
       );
-      await pablockToken.addContractToWhitelist(pablockNFT.address, 1, 3);
-      await pablockToken.addContractToWhitelist(multisignFactory.address, 1, 3);
-      await pablockToken.addContractToWhitelist(metaTransaction.address, 1, 3);
-      await pablockToken.addContractToWhitelist(
-        testMetaTransaction.address,
-        1,
-        1
-      );
 
-      // console.log("PABLOCK_TOKEN_ADDRESS=", pablockToken.address);
-      // console.log("PABLOCK_META_TRANSACTION=", metaTransaction.address);
-      // // console.log("CUSTOMERC20 TOKEN ADDRESS: ", customERC20.address);
-      // console.log("PABLOCK_NOTARIZATION=", pablockNotarization.address);
+      await pablockToken.addContractToWhitelist(pablockNFT.address, 1, 3);
+      // await pablockToken.addContractToWhitelist(multisignFactory.address, 1, 3);
+      await pablockToken.addContractToWhitelist(metaTransaction.address, 1, 3);
+      // await pablockToken.addContractToWhitelist(
+      //   testMetaTransaction.address,
+      //   1,
+      //   2
+      // );
+
+      // await pablockToken.changeProfilationStatus(
+      //   testMetaTransaction.address,
+      //   true
+      // );
+
+      console.log("PABLOCK_TOKEN_ADDRESS=", pablockToken.address);
+      console.log("PABLOCK_META_TRANSACTION=", metaTransaction.address);
+      console.log("PABLOCK_NOTARIZATION=", pablockNotarization.address);
       console.log("PABLOCK_NFT=", pablockNFT.address);
-      console.log("PABLOCK_MULTISIGN_FACTORY=", multisignFactory.address);
-      console.log("TEST_META_TX=", testMetaTransaction.address);
+      // console.log("PABLOCK_MULTISIGN_FACTORY=", multisignFactory.address);
+      // console.log("TEST_META_TX=", testMetaTransaction.address);
+      // console.log("CUSTOMERC20 TOKEN ADDRESS: ", customERC20.address);
     }
   });
 

@@ -23,14 +23,14 @@ const HDWalletProvider = require("@truffle/hdwallet-provider");
 const fs = require("fs");
 
 let infuraKey = null;
-let maticMnemonic = null;
+let maticPrivate = null;
 let mumbaiPrivate = null;
 let goerliPrivate = null;
 let ropstenMnemonic = null;
 
 if (!isCI) {
   infuraKey = fs.readFileSync(".infurakey.secret").toString().trim();
-  maticMnemonic = fs.readFileSync(".matic.secret").toString().trim();
+  maticPrivate = fs.readFileSync(".matic.secret").toString().trim();
   // mumbaiPrivate = fs.readFileSync(".mumbai.secret").toString().trim();
   mumbaiPrivate =
     "e8bf741fada50a9a5d156631c5201c6d2c5dd38e168d246ea3cf1d313d9101bb";
@@ -64,25 +64,26 @@ module.exports = {
     matic: {
       provider: () =>
         new HDWalletProvider({
-          mnemonic: maticMnemonic,
+          privateKeys: [maticPrivate],
           providerOrUrl: `https://polygon-mainnet.infura.io/v3/${infuraKey}`,
         }),
       network_id: 137,
-      confirmations: 2,
-      timeoutBlocks: 200,
+      // confirmations: 2,
+      // timeoutBlocks: 200,
       skipDryRun: true,
     },
     mumbai: {
+      networkCheckTimeout: 999999,
       provider: () =>
         new HDWalletProvider({
           privateKeys: [mumbaiPrivate],
           providerOrUrl: `https://polygon-mumbai.infura.io/v3/${infuraKey}`,
-          // providerOrUrl: "https://matic-mumbai.chainstacklabs.com",
+          // providerOrUrl: "https://rpc-mumbai.maticvigil.com/ ",
         }),
       network_id: 80001,
       // confirmations: 2,
       // timeoutBlocks: 200,
-      skipDryRun: true,
+      skipDryRun: false,
     },
     goerli: {
       provider: () =>
