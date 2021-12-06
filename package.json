@@ -1,47 +1,8 @@
 {
   "name": "pablock-smartcontracts",
   "version": "1.0.0",
-  "description": "",
-  "main": "truffle-config.js",
-  "directories": {
-    "test": "test"
-  },
-  "scripts": {
-    "test": "npx truffle test --network local",
-    "deploy": "npx truffle deploy --network local",
-    "test:mumbai": "npx truffle test --network mumbai",
-    "deploy:mumbai": "npx truffle deploy --network mumbai",
-    "start:ganache": "npx ganache-cli --port 7545",
-    "start:ganache-ci": "ganache-cli --port 7545 > /dev/null 2>&1 &"
-  },
+  "description": "Pablock smart contracts",
   "keywords": [],
   "author": "",
-  "license": "ISC",
-  "devDependencies": {
-    "@nomiclabs/buidler": "^1.4.8",
-    "@opengsn/gsn": "^2.1.0",
-    "@openzeppelin/contracts": "^4.4.0",
-    "ethereumjs-util": "^7.1.0",
-    "ethers": "^5.4.1",
-    "ganache-cli": "^6.12.2",
-    "truffle": "^5.3.10",
-    "webpack": "^4.12.0",
-    "webpack-cli": "^3.0.6",
-    "webpack-dev-server": "^3.1.4"
-  },
-  "dependencies": {
-    "@openzeppelin/contracts-upgradeable": "^4.0.0",
-    "@openzeppelin/test-helpers": "^0.5.12",
-    "@truffle/hdwallet-provider": "^1.4.0",
-    "abi-decoder": "^2.4.0",
-    "chai": "^4.3.4",
-    "dotenv": "^10.0.0",
-    "eth-gas-reporter": "^0.2.22",
-    "ethereumjs-common": "^1.5.2",
-    "ethereumjs-tx": "^2.1.2",
-    "lodash": "^4.17.21",
-    "scrypt": "^6.0.3",
-    "truffle-assertions": "^0.9.2",
-    "web3": "^1.4.0"
-  }
+  "license": "ISC"
 }
