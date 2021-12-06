@@ -1,8 +1,12 @@
 {
   "name": "pablock-smartcontracts",
   "version": "1.0.0",
-  "description": "Pablock smart contracts",
+  "description": "Pablock smart contracts repository",
+  "main": "truffle-config.js",
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "@openzeppelin/contracts": "^4.4.0"
+  }
 }
