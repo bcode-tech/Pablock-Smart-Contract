@@ -5,18 +5,12 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "./lib/EIP712Base.sol";
 
 contract PablockToken is ERC20, EIP712Base {
-
     /**
      * NOTESET -> not correctly configured
      * CONSUME -> users need to have PTK in order to execute ops
-     * SUBSCRIPTION -> users gained an 
+     * SUBSCRIPTION -> users gained an
      */
-    enum SubscriptionType {
-        NOTSET,
-        CONSUME, 
-        SUBSCRIPTION,
-        INTERNAL
-    }
+    enum SubscriptionType {NOTSET, CONSUME, SUBSCRIPTION, INTERNAL}
 
     struct WhiteListedContract {
         uint256 defaultPrice;
@@ -29,16 +23,14 @@ contract PablockToken is ERC20, EIP712Base {
     uint256 DECIMALS = 18;
 
     address contractOwner;
-    address pablockDataAddress;
 
     //Supply data
     uint256 maxSupply;
     bool lockSupply = false;
 
-    bytes32 public immutable PERMIT_TYPEHASH =
-        keccak256(
-            "Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)"
-        );
+    bytes32 public immutable PERMIT_TYPEHASH = keccak256(
+        "Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)"
+    );
 
     // mapping(address => bool) private contractWhitelist;
     mapping(address => WhiteListedContract) private contractWhitelist;
@@ -54,19 +46,16 @@ contract PablockToken is ERC20, EIP712Base {
         _;
     }
 
-    constructor(uint256 _maxSupply) ERC20("PablockToken", "PTK") EIP712Base("PablockToken", "0.0.1") {
+    constructor(uint256 _maxSupply)
+        ERC20("PablockToken", "PTK")
+        EIP712Base("PablockToken", "0.0.1")
+    {
         contractOwner = msg.sender;
         maxSupply = _maxSupply;
-
-       
     }
 
-    function initialize(address _owner, address _pablockDataAddress)
-        public
-        byOwner
-    {
+    function initialize(address _owner) public byOwner {
         contractOwner = _owner;
-        pablockDataAddress = _pablockDataAddress;
     }
 
     function requestToken(address to, uint256 mintQuantity) public byOwner {
@@ -132,9 +121,14 @@ contract PablockToken is ERC20, EIP712Base {
         address addr
     ) public onlyWhitelisted returns (bool) {
         if (
-             (msg.sender != contractOwner && contractWhitelist[_contract].subscriptionType ==
-            SubscriptionType.CONSUME && contractWhitelist[_contract].subscriptionType !=
-            SubscriptionType.NOTSET) || (msg.sender ==  _contract && contractWhitelist[_contract].subscriptionType == SubscriptionType.INTERNAL)
+            (msg.sender != contractOwner &&
+                contractWhitelist[_contract].subscriptionType ==
+                SubscriptionType.CONSUME &&
+                contractWhitelist[_contract].subscriptionType !=
+                SubscriptionType.NOTSET) ||
+            (msg.sender == _contract &&
+                contractWhitelist[_contract].subscriptionType ==
+                SubscriptionType.INTERNAL)
         ) {
             _burn(addr, getPrice(_contract, _functionSig) * 10**DECIMALS);
         }

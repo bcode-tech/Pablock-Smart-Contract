@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
-contract PablockData{
-
+contract PablockData {
     struct PablockContracts {
         address pablockToken;
         address pablockNFT;
@@ -10,7 +9,7 @@ contract PablockData{
         address pablockMultiSignFactory;
     }
 
-    mapping (bytes32 => uint256) private functionPrices;
+    mapping(bytes32 => uint256) private functionPrices;
 
     address private contractOwner;
     PablockContracts private pablockContracts;
@@ -20,8 +19,12 @@ contract PablockData{
         _;
     }
 
-
-    constructor (address _pablockToken, address _pablockNFT, address _pablockNotarization, address _pablockMultiSignFactory) public {
+    constructor(
+        address _pablockToken,
+        address _pablockNFT,
+        address _pablockNotarization,
+        address _pablockMultiSignFactory
+    ) {
         pablockContracts.pablockToken = _pablockToken;
         pablockContracts.pablockNFT = _pablockNFT;
         pablockContracts.pablockNotarization = _pablockNotarization;
@@ -53,5 +56,4 @@ contract PablockData{
     function changeOwner(address _newOwner) public byOwner {
         contractOwner = _newOwner;
     }
-
 }
