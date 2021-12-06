@@ -2,13 +2,15 @@
 pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "./PablockMetaTxReceiver.sol";
 import "./lib/EIP712Base.sol";
 
-contract PablockToken is ERC20, EIP712Base {
+contract PablockToken is ERC20, PablockMetaTxReceiver {
     /**
      * NOTESET -> not correctly configured
      * CONSUME -> users need to have PTK in order to execute ops
-     * SUBSCRIPTION -> users gained an
+     * SUBSCRIPTION -> users with subscription contract, have a flat monthly fee to execute as many request
+     * INTERNAL -> used by Pablock cotracts
      */
     enum SubscriptionType {NOTSET, CONSUME, SUBSCRIPTION, INTERNAL}
 
@@ -17,6 +19,9 @@ contract PablockToken is ERC20, EIP712Base {
         bool isSet;
         SubscriptionType subscriptionType;
         mapping(bytes4 => uint256) functionPrices;
+        mapping(address => bool) allowedAddresses;
+        bool profilationEnabled;
+address contractOwner;
     }
 
     uint256 MAX_ALLOWANCE = 2 ^ (256 - 1);
@@ -37,20 +42,20 @@ contract PablockToken is ERC20, EIP712Base {
     mapping(address => uint256) private nonces;
 
     modifier byOwner() {
-        require(contractOwner == msg.sender, "Not allowed");
+        require(contractOwner == msgSender(), "Not allowed");
         _;
     }
 
     modifier onlyWhitelisted() {
-        require(contractWhitelist[msg.sender].isSet, "Contract not allowed");
+        require(contractWhitelist[msgSender()].isSet, "Contract not allowed");
         _;
     }
 
     constructor(uint256 _maxSupply)
         ERC20("PablockToken", "PTK")
-        EIP712Base("PablockToken", "0.0.1")
+        PablockMetaTxReceiver("PablockToken", "0.2.3")
     {
-        contractOwner = msg.sender;
+        contractOwner = msgSender();
         maxSupply = _maxSupply;
     }
 
@@ -99,6 +104,14 @@ contract PablockToken is ERC20, EIP712Base {
         return contractWhitelist[_contract].functionPrices[_functionSig];
     }
 
+    function setSubUserAddr(address contractAddr, address userAddress, bool status) public {
+        require(contractWhitelist[contractAddr].contractOwner == msgSender(), "Address not authorized");
+        
+        _burn(msgSender(), 1 * 10**DECIMALS);
+        
+        contractWhitelist[contractAddr].allowedAddresses[userAddress] = status;
+    }
+
     function changeOwner(address _newOwner) public byOwner {
         contractOwner = _newOwner;
     }
@@ -111,22 +124,18 @@ contract PablockToken is ERC20, EIP712Base {
         lockSupply = _lockSupply;
     }
 
-    function unlimitedApprove() external {
-        _approve(msg.sender, address(this), MAX_ALLOWANCE);
-    }
-
     function receiveAndBurn(
         address _contract,
         bytes4 _functionSig,
         address addr
     ) public onlyWhitelisted returns (bool) {
         if (
-            (msg.sender != contractOwner &&
+            (msgSender() != contractOwner &&
                 contractWhitelist[_contract].subscriptionType ==
                 SubscriptionType.CONSUME &&
                 contractWhitelist[_contract].subscriptionType !=
                 SubscriptionType.NOTSET) ||
-            (msg.sender == _contract &&
+            (msgSender() == _contract &&
                 contractWhitelist[_contract].subscriptionType ==
                 SubscriptionType.INTERNAL)
         ) {
@@ -180,8 +189,8 @@ contract PablockToken is ERC20, EIP712Base {
             "PTK Permit: invalid signature"
         );
 
-        if (msg.sender != spender) {
-            _approve(owner, msg.sender, amount * 10**DECIMALS);
+        if (msgSender() != spender) {
+            _approve(owner, msgSender(), amount * 10**DECIMALS);
         }
         _approve(owner, spender, amount * 10**DECIMALS);
     }
@@ -191,6 +200,7 @@ contract PablockToken is ERC20, EIP712Base {
     }
 
     function getVersion() public pure returns (string memory) {
-        return "PablockToken version 0.2.2 (Gasless)";
+        return "PablockToken version 0.2.3";
     }
+
 }

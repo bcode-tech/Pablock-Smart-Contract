@@ -18,24 +18,25 @@ module.exports = async function (deployer, network) {
   process.env.NETWORK = deployer.network;
 
   deployer.then(async () => {
-    // const pablockToken = await deployer.deploy(PablockToken, 1000000000);
+    const pablockToken = await deployer.deploy(PablockToken, 1000000000);
 
-    const pablockToken = {
-      address: "0xFDF84B11382343FbCe877277aEC42091F34bA25D", //MUMBAI
-      // address: "0x2b9233683001657161db866c7405493Fc1d1C22d", //LOCAL Legacy
-    };
+    // const pablockToken = {
+    //   address: "0xFDF84B11382343FbCe877277aEC42091F34bA25D", //MUMBAI
+    //   // address: "0x2b9233683001657161db866c7405493Fc1d1C22d", //LOCAL Legacy
+    // };
 
-    const metaTransaction = {
-      address: "0x3FEecd6269D880Fff83bA82ddA90639062377FB3",
-    };
+    // const metaTransaction = {
+    //   address: "0x3FEecd6269D880Fff83bA82ddA90639062377FB3",
+    // };
 
     if (pablockToken.address) {
-      // const metaTransaction = await deployer.deploy(
-      //   MetaTransaction,
-      //   "PablockMetaTransaction",
-      //   "0.1.0",
-      //   pablockToken.address
-      // );
+      const metaTransaction = await deployer.deploy(
+        MetaTransaction,
+        "PablockMetaTransaction",
+        "0.1.0",
+        pablockToken.address
+      );
+
       // const customERC20 = await deployer.deploy(
       //   CustomERC20,
       //   "CustomERC20",
@@ -58,19 +59,19 @@ module.exports = async function (deployer, network) {
       //   pablockToken.address
       // );
 
-      // const testMetaTransaction = await deployer.deploy(
-      //   TestMetaTransaction,
-      //   "TestMetaTransaction",
-      //   "0.0.1",
-      //   pablockToken.address,
-      //   metaTransaction.address
-      // );
+      const testMetaTransaction = await deployer.deploy(
+        TestMetaTransaction,
+        "TestMetaTransaction",
+        "0.0.1",
+        pablockToken.address,
+        metaTransaction.address
+      );
 
-      // const pablockNotarization = await deployer.deploy(
-      //   PablockNotarization,
-      //   pablockToken.address,
-      //   metaTransaction.address
-      // );
+      const pablockNotarization = await deployer.deploy(
+        PablockNotarization,
+        pablockToken.address,
+        metaTransaction.address
+      );
 
       const pablockNFT = await deployer.deploy(
         PablockNFT,
@@ -86,20 +87,21 @@ module.exports = async function (deployer, network) {
         metaTransaction.address
       );
 
-      //Contract whitelisting on PablockToken
-      // await pablockToken.addContractToWhitelist(
-      //   pablockNotarization.address,
-      //   1,
-      //   3
-      // );
-      // await pablockToken.addContractToWhitelist(pablockNFT.address, 1, 3);
-      // await pablockToken.addContractToWhitelist(multisignFactory.address, 1, 3);
-      // await pablockToken.addContractToWhitelist(metaTransaction.address, 1, 3);
-      // await pablockToken.addContractToWhitelist(
-      //   testMetaTransaction.address,
-      //   1,
-      //   1
-      // );
+      // Contract whitelisting on PablockToken
+      await pablockToken.addContractToWhitelist(pablockToken.address, 1, 3);
+      await pablockToken.addContractToWhitelist(
+        pablockNotarization.address,
+        1,
+        3
+      );
+      await pablockToken.addContractToWhitelist(pablockNFT.address, 1, 3);
+      await pablockToken.addContractToWhitelist(multisignFactory.address, 1, 3);
+      await pablockToken.addContractToWhitelist(metaTransaction.address, 1, 3);
+      await pablockToken.addContractToWhitelist(
+        testMetaTransaction.address,
+        1,
+        1
+      );
 
       // console.log("PABLOCK_TOKEN_ADDRESS=", pablockToken.address);
       // console.log("PABLOCK_META_TRANSACTION=", metaTransaction.address);

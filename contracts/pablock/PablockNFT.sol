@@ -92,7 +92,7 @@ contract PablockNFT is ERC721Enumerable, ERC721URIStorage,  PablockMetaTxReceive
 
     //OVERRIDE FUNCTIONS
 
-     function _beforeTokenTransfer(address from, address to, uint256 amount) internal virtual override(ERC721, ERC721Enumerable) {
+    function _beforeTokenTransfer(address from, address to, uint256 amount) internal virtual override(ERC721, ERC721Enumerable) {
         super._beforeTokenTransfer(from, to, amount);
     }
 
