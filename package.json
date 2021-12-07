@@ -2,12 +2,6 @@
   "name": "pablock-smart-contracts",
   "version": "0.1.0",
   "dependencies": {
-<<<<<<< HEAD
     "@openzeppelin/contracts": "^4.4.0"
-=======
-    "@openzeppelin/contracts": "^4.4.0",
-    "ethereumjs-util": "^7.1.3",
-    "web3-eth-abi": "^1.6.1"
->>>>>>> master
   }
 }
