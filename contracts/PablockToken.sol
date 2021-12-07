@@ -2,22 +2,16 @@
 pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "./PablockMetaTxReceiver.sol";
 import "./lib/EIP712Base.sol";
 
-contract PablockToken is ERC20, PablockMetaTxReceiver {
+contract PablockToken is ERC20 {
   /**
    * NOTESET -> not correctly configured
    * CONSUME -> users need to have PTK in order to execute ops
    * SUBSCRIPTION -> users with subscription contract, have a flat monthly fee to execute as many request
    * INTERNAL -> used by Pablock cotracts
    */
-  enum SubscriptionType {
-    NOTSET,
-    CONSUME,
-    SUBSCRIPTION,
-    INTERNAL
-  }
+  enum SubscriptionType { NOTSET, CONSUME, SUBSCRIPTION, INTERNAL }
 
   struct WhiteListedContract {
     uint256 defaultPrice;
@@ -29,20 +23,20 @@ contract PablockToken is ERC20, PablockMetaTxReceiver {
     address contractOwner;
   }
 
-  uint256 MAX_ALLOWANCE = 2 ^ (256 - 1);
-  uint256 DECIMALS = 18;
+  uint256 constant MAX_ALLOWANCE = 2 ^ (256 - 1);
+  uint256 constant DECIMALS = 18;
 
-  address contractOwner;
+  address private contractOwner;
 
   //Supply data
-  uint256 maxSupply;
-  bool lockSupply = false;
+  uint256 public maxSupply;
+  bool public lockSupply = false;
 
   mapping(address => WhiteListedContract) private contractWhitelist;
   mapping(address => uint256) private nonces;
 
   modifier byOwner() {
-    require(contractOwner == msgSender(), "Not allowed");
+    require(contractOwner == msg.sender, "Not allowed");
     _;
   }
 
@@ -60,7 +54,7 @@ contract PablockToken is ERC20, PablockMetaTxReceiver {
           !contractWhitelist[_contract].profilationEnabled) ||
         (contractWhitelist[_contract].subscriptionType ==
           SubscriptionType.SUBSCRIPTION &&
-          contractWhitelist[_contract].allowedAddresses[msgSender()]),
+          contractWhitelist[_contract].allowedAddresses[msg.sender]),
       "User not allowed to execute function"
     );
     _;
@@ -68,12 +62,9 @@ contract PablockToken is ERC20, PablockMetaTxReceiver {
 
   constructor(uint256 _maxSupply, address _metaTxAddr)
     ERC20("PablockToken", "PTK")
-    PablockMetaTxReceiver("PablockToken", "0.2.3")
   {
-    contractOwner = msgSender();
+    contractOwner = msg.sender;
     maxSupply = _maxSupply;
-
-    setMetaTransaction(_metaTxAddr);
   }
 
   function initialize(address _owner) public byOwner {
@@ -99,7 +90,7 @@ contract PablockToken is ERC20, PablockMetaTxReceiver {
     contractWhitelist[_contract].isSet = true;
     contractWhitelist[_contract].defaultPrice = _price;
     contractWhitelist[_contract].subscriptionType = SubscriptionType(_type);
-    contractWhitelist[_contract].contractOwner = msgSender();
+    contractWhitelist[_contract].contractOwner = msg.sender;
   }
 
   function removeContractFromWhitelist(address _contract) public byOwner {
@@ -126,20 +117,13 @@ contract PablockToken is ERC20, PablockMetaTxReceiver {
     address contractAddr,
     address userAddress,
     bool status
-  ) public {
-    require(
-      contractWhitelist[contractAddr].contractOwner == msgSender(),
-      "Address not authorized"
-    );
-
-    _burn(msgSender(), 1 * 10**DECIMALS);
-
+  ) public byOwner {
     contractWhitelist[contractAddr].allowedAddresses[userAddress] = status;
   }
 
   function changeProfilationStatus(address contractAddr, bool status) public {
     require(
-      contractWhitelist[contractAddr].contractOwner == msgSender(),
+      contractWhitelist[contractAddr].contractOwner == msg.sender,
       "Address not authorized"
     );
     contractWhitelist[contractAddr].profilationEnabled = status;
@@ -168,12 +152,10 @@ contract PablockToken is ERC20, PablockMetaTxReceiver {
     returns (bool)
   {
     if (
-      (msgSender() != contractOwner &&
+      (msg.sender != contractOwner &&
         contractWhitelist[_contract].subscriptionType ==
-        SubscriptionType.CONSUME &&
-        contractWhitelist[_contract].subscriptionType !=
-        SubscriptionType.NOTSET) ||
-      (msgSender() == _contract &&
+        SubscriptionType.CONSUME) ||
+      (msg.sender == _contract &&
         contractWhitelist[_contract].subscriptionType ==
         SubscriptionType.INTERNAL)
     ) {
