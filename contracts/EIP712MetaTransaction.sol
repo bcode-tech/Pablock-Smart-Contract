@@ -7,12 +7,11 @@ import "./PablockToken.sol";
 
 contract EIP712MetaTransaction is EIP712Base {
     using SafeMath for uint256;
-    bytes32 private constant META_TRANSACTION_TYPEHASH =
-        keccak256(
-            bytes(
-                "MetaTransaction(uint256 nonce,address from,bytes functionSignature)"
-            )
-        );
+    bytes32 private constant META_TRANSACTION_TYPEHASH = keccak256(
+        bytes(
+            "MetaTransaction(uint256 nonce,address from,bytes functionSignature)"
+        )
+    );
 
     event MetaTransactionExecuted(
         address userAddress,
@@ -22,6 +21,7 @@ contract EIP712MetaTransaction is EIP712Base {
     mapping(address => uint256) private nonces;
 
     address pablockTokenAddress;
+    address contractOwner;
 
     /*
      * Meta transaction structure.
@@ -34,16 +34,24 @@ contract EIP712MetaTransaction is EIP712Base {
         bytes functionSignature;
     }
 
-    constructor(
-        string memory name,
-        string memory version,
-        address _pablockTokenAddress
-    ) public EIP712Base(name, version) {
+    modifier byOwner() {
+        require(contractOwner == msgSender(), "Not allowed");
+        _;
+    }
+
+    constructor(string memory name, string memory version)
+        EIP712Base(name, version)
+    {
+        contractOwner = msgSender();
+    }
+
+    function initialize(address _pablockTokenAddress) public byOwner {
         pablockTokenAddress = _pablockTokenAddress;
     }
 
     function convertBytesToBytes4(bytes memory inBytes)
         internal
+        pure
         returns (bytes4 outBytes4)
     {
         if (inBytes.length == 0) {
@@ -55,12 +63,12 @@ contract EIP712MetaTransaction is EIP712Base {
         }
     }
 
-/**
-*   This function allow the execution of another cotnract function through relay method.
-*   The contract function needs to be register and gives this contract name and version to enable 
-*   correct DOMAIN_SEPARATOR calcualtion. If a contract register to meta transaction but not validated on PablockToken
-*   the execution will failed.
-*/
+    /**
+     *   This function allow the execution of another cotnract function through relay method.
+     *   The contract function needs to be register and gives this contract name and version to enable
+     *   correct DOMAIN_SEPARATOR calcualtion. If a contract register to meta transaction but not validated on PablockToken
+     *   the execution will failed.
+     */
     function executeMetaTransaction(
         address destinationContract,
         address userAddress,
@@ -71,7 +79,6 @@ contract EIP712MetaTransaction is EIP712Base {
     ) public payable returns (bytes memory) {
         bytes4 destinationFunctionSig = convertBytesToBytes4(functionSignature);
 
-    
         require(
             destinationFunctionSig != msg.sig,
             "functionSignature can not be of executeMetaTransaction method"
@@ -91,10 +98,14 @@ contract EIP712MetaTransaction is EIP712Base {
         (bool success, bytes memory returnData) = destinationContract.call(
             abi.encodePacked(functionSignature, userAddress)
         );
-        
-        PablockToken(pablockTokenAddress).receiveAndBurn(destinationContract, destinationFunctionSig, userAddress);
 
-        require(success, string (returnData));
+        PablockToken(pablockTokenAddress).receiveAndBurn(
+            destinationContract,
+            destinationFunctionSig,
+            userAddress
+        );
+
+        require(success, string(returnData));
         emit MetaTransactionExecuted(
             userAddress,
             payable(msg.sender),
@@ -104,7 +115,8 @@ contract EIP712MetaTransaction is EIP712Base {
     }
 
     function hashMetaTransaction(MetaTransaction memory metaTx)
-        internal pure
+        internal
+        pure
         returns (bytes32)
     {
         return
@@ -132,7 +144,10 @@ contract EIP712MetaTransaction is EIP712Base {
     ) internal view returns (bool) {
         // console.logBytes32(toTypedMessageHash(hashMetaTransaction(metaTx)));
         address signer = ecrecover(
-            toTypedMessageHash(hashMetaTransaction(metaTx), destinationContract),
+            toTypedMessageHash(
+                hashMetaTransaction(metaTx),
+                destinationContract
+            ),
             sigV,
             sigR,
             sigS
