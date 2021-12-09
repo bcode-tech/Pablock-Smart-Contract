@@ -1,5 +1,6 @@
 {
 <<<<<<< HEAD
+<<<<<<< HEAD
   "name": "pablock-smartcontracts",
   "version": "1.0.0",
   "description": "Pablock smart contracts repository",
@@ -48,5 +49,11 @@
     "ethereumjs-util": "^7.1.3",
     "web3-eth-abi": "^1.6.1"
 >>>>>>> master
+=======
+  "name": "pablock-smart-contracts",
+  "version": "0.1.0",
+  "dependencies": {
+    "@openzeppelin/contracts": "^4.4.0"
+>>>>>>> 6b20ab78d6683e1fd7bc4f655f81a19e6598e542
   }
 }
