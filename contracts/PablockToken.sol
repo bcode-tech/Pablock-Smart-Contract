@@ -60,9 +60,7 @@ contract PablockToken is ERC20 {
     _;
   }
 
-  constructor(uint256 _maxSupply, address _metaTxAddr)
-    ERC20("PablockToken", "PTK")
-  {
+  constructor(uint256 _maxSupply) ERC20("PablockToken", "PTK") {
     contractOwner = msg.sender;
     maxSupply = _maxSupply;
   }
