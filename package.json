@@ -1,5 +1,5 @@
 {
-  "name": "pablock-smartcontracts",
+  "name": "pablock-smart-contracts",
   "version": "1.0.0",
   "description": "Pablock smart contracts repository",
   "main": "truffle-config.js",
