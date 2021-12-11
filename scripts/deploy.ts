@@ -34,10 +34,7 @@ async function main() {
   await metaTransaction.deployed();
 
   if (metaTransaction.address) {
-    const pablockToken = await PablockToken.deploy(
-      1000000000,
-      metaTransaction.address,
-    );
+    const pablockToken = await PablockToken.deploy(1000000000);
     await pablockToken.deployed();
 
     const pablockNotarization = await PablockNotarization.deploy(

@@ -1,46 +1,65 @@
-# Advanced Sample Hardhat Project
+<!-- <img src="https://www.pablock.it/wp-content/uploads/2021/05/cropped-logoBCode_bianco-1.png" alt=""Pablock" height="40px"> -->
 
-This project demonstrates an advanced Hardhat use case, integrating other tools commonly used alongside Hardhat in the ecosystem.
+# Pablock-Smart-Contract
 
-The project comes with a sample contract, a test for that contract, a sample script that deploys that contract, and an example of a task implementation, which simply lists the available accounts. It also comes with a variety of other tools, preconfigured to work with the project code.
+Implementations of Pablock Suite smazrt contracts, includes:
 
-Try running some of the following tasks:
+- PablockToken: ERC20 Utility Token to use Pablock services.
+- PablockNFT: ERC721 token to generate custom NFT
+- PablockNotarization: Notarization contract to save file hash on blockchain
+- PablockMultiSign: Facotry to deploy multi sign contract.
+- EIP712 compatible meta transaction.
 
-```shell
-npx hardhat accounts
-npx hardhat compile
-npx hardhat clean
-npx hardhat test
-npx hardhat node
-npx hardhat help
-REPORT_GAS=true npx hardhat test
-npx hardhat coverage
-npx hardhat run scripts/deploy.ts
-TS_NODE_FILES=true npx ts-node scripts/deploy.ts
-npx eslint '**/*.{js,ts}'
-npx eslint '**/*.{js,ts}' --fix
-npx prettier '**/*.{json,sol,md}' --check
-npx prettier '**/*.{json,sol,md}' --write
-npx solhint 'contracts/**/*.sol'
-npx solhint 'contracts/**/*.sol' --fix
+## Overview
+
+### Installation
+
+```console
+npm install git+https://github.com/bcode-tech/Pablock-Smart-Contracts
 ```
 
-# Etherscan verification
+or
 
-To try out Etherscan verification, you first need to deploy a contract to an Ethereum network that's supported by Etherscan, such as Ropsten.
-
-In this project, copy the .env.example file to a file named .env, and then edit it to fill in the details. Enter your Etherscan API key, your Ropsten node URL (eg from Alchemy), and the private key of the account which will send the deployment transaction. With a valid .env file in place, first deploy your contract:
-
-```shell
-hardhat run --network ropsten scripts/sample-script.ts
+```console
+yarn add git+https://github.com/bcode-tech/Pablock-Smart-Contracts
 ```
 
-Then, copy the deployment address and paste it in to replace `DEPLOYED_CONTRACT_ADDRESS` in this command:
+### Usage
 
-```shell
-npx hardhat verify --network ropsten DEPLOYED_CONTRACT_ADDRESS "Hello, Hardhat!"
+Once installed, use PablockMetaTranasactionReceiver to enable Pablock meta
+transaction on your contract.
+
+```solidity
+pragma solidity ^0.7.4;
+import "pablock-smart-contract/contract/PablockMetaTxReceiver.sol";
+
+contract MyContract is PablockMetaTxReceiver {
+  constructor(address metaTxAddress)
+    PablockMetaTxReceiver("MyContract", "0.0.1")
+  {
+    setMetaTransaction(metaTxAddress);
+  }
+}
+
 ```
 
-# Performance optimizations
+metaTxAddress rappresents the deployment address of EIP712MetaTransaction
+deployed by BCode from the Pablock ecosystem.
 
-For faster runs of your tests and scripts, consider skipping ts-node's type checking by setting the environment variable `TS_NODE_TRANSPILE_ONLY` to `1` in hardhat's environment. For more details see [the documentation](https://hardhat.org/guides/typescript.html#performance-optimizations).
+## Integration
+
+To use Pablock contracts in your contract as shown above:
+
+### MUBAI
+
+For the Matic Mumbai network:
+
+```json
+{
+  "PABLOCK_TOKEN_ADDRESS": "0x70b2b8c820d62e7bd95e296dcb8de6a18ad2bca5",
+  "PABLOCK_META_TRANSACTION": "0x4884fd12bd652412648f3452148260c30e6cb08a",
+  "PABLOCK_NOTARIZATION": "0xb2c82046c2cf26a247b4467ab95cba4398c8b9a0",
+  "PABLOCK_NFT": "0x81e5fed95a6c474416d416a3fa59cf07fd7315f9",
+  "PABLOCK_MULTISIGN_FACTORY": "0x819e458106f40bc7730bd0621b3201b51c05d20"5
+}
+```
