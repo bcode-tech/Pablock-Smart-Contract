@@ -26,19 +26,25 @@ yarn add git+https://github.com/bcode-tech/Pablock-Smart-Contracts
 
 ### Usage
 
-Once installed, use PablockMetaTranasactionReceiver to enable Pablock meta transaction on your contract.
+Once installed, use PablockMetaTranasactionReceiver to enable Pablock meta
+transaction on your contract.
 
 ```solidity
 pragma solidity ^0.7.4;
 import "pablock-smart-contract/contract/PablockMetaTxReceiver.sol";
+
 contract MyContract is PablockMetaTxReceiver {
   constructor(address metaTxAddress)
-    PablockMetaTxReceiver("MyContract", "0.0.1", metaTxAddress)
-  {}
+    PablockMetaTxReceiver("MyContract", "0.0.1")
+  {
+    setMetaTransaction(metaTxAddress);
+  }
 }
+
 ```
 
-metaTxAddress rappresents the deployment address of EIP712MetaTransaction deployed by BCode from the Pablock ecosystem.
+metaTxAddress rappresents the deployment address of EIP712MetaTransaction
+deployed by BCode from the Pablock ecosystem.
 
 ## Integration
 
@@ -50,9 +56,10 @@ For the Matic Mumbai network:
 
 ```json
 {
-  "PABLOCK_META_TRANSACTION": "0x3FEecd6269D880Fff83bA82ddA90639062377FB3",
-  "PABLOCK_NOTARIZATION": "0xbC7D6EDc1d6c4c80d508b35a0eACB1E59DdE7369",
-  "PABLOCK_NFT": "0x176761fc94b8370849B1314e5e0E4A27D766258D",
-  "PABLOCK_MULTISIGN_FACTORY": "0x1474D0B6AD27Bd0343e2bB23781036282FF8ec90"
+  "PABLOCK_TOKEN_ADDRESS": "0x70b2b8c820d62e7bd95e296dcb8de6a18ad2bca5",
+  "PABLOCK_META_TRANSACTION": "0x4884fd12bd652412648f3452148260c30e6cb08a",
+  "PABLOCK_NOTARIZATION": "0xb2c82046c2cf26a247b4467ab95cba4398c8b9a0",
+  "PABLOCK_NFT": "0x81e5fed95a6c474416d416a3fa59cf07fd7315f9",
+  "PABLOCK_MULTISIGN_FACTORY": "0x819e458106f40bc7730bd0621b3201b51c05d20"5
 }
 ```
