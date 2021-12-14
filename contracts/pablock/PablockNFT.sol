@@ -3,6 +3,8 @@ pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
+import "@openzeppelin/contracts/security/Pausable.sol";
 
 import "../PablockMetaTxReceiver.sol";
 import "../PablockToken.sol";
@@ -38,11 +40,6 @@ contract PablockNFT is
     setMetaTransaction(_metaTxAddress);
   }
 
-  modifier byOwner() {
-    require(contractOwner == msg.sender, "Not allowed");
-    _;
-  }
-
   modifier isInitialized() {
     require(pablockTokenAddress != address(0), "Contract not initialized");
     _;
@@ -62,11 +59,11 @@ contract PablockNFT is
     // uint[quantity] memory indexes;
 
     for (uint256 i = 0; i < quantity; i++) {
+      counter++;
       _safeMint(to, counter);
       _setTokenURI(counter, _uri);
       unlockedTokens[counter] = false;
       indexes[i] = counter;
-      counter++;
     }
 
     PablockToken(pablockTokenAddress).receiveAndBurn(
@@ -87,7 +84,7 @@ contract PablockNFT is
       PablockToken(pablockTokenAddress).receiveAndBurn(
         address(this),
         msg.sig,
-        from
+        msgSender()
       );
     }
 
@@ -96,6 +93,12 @@ contract PablockNFT is
 
   function unlockToken(uint256 tokenId) public isInitialized {
     require(ownerOf(tokenId) == msgSender());
+
+    PablockToken(pablockTokenAddress).receiveAndBurn(
+      address(this),
+      msg.sig,
+      msgSender()
+    );
 
     unlockedTokens[tokenId] = true;
   }
@@ -134,7 +137,7 @@ contract PablockNFT is
     public
     view
     virtual
-    override(ERC721, ERC721Enumerable)
+    override(ERC721, ERC721Enumerable, AccessControl)
     returns (bool)
   {
     super.supportsInterface(interfaceId);
