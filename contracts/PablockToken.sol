@@ -1,202 +1,238 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.7.4;
+pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
+import "@openzeppelin/contracts/security/Pausable.sol";
 import "./lib/EIP712Base.sol";
 
-contract PablockToken is ERC20, EIP712Base {
+import "hardhat/console.sol";
 
-    /**
-     * NOTESET -> not correctly configured
-     * CONSUME -> users need to have PTK in order to execute ops
-     * SUBSCRIPTION -> users gained an 
-     */
-    enum SubscriptionType {
-        NOTSET,
-        CONSUME, 
-        SUBSCRIPTION,
-        INTERNAL
-    }
+contract PablockToken is ERC20, AccessControl, Pausable {
+  bytes32 public constant PAYER_ROLE = keccak256("PAYER");
 
-    struct WhiteListedContract {
-        uint256 defaultPrice;
-        bool isSet;
-        SubscriptionType subscriptionType;
-        mapping(bytes4 => uint256) functionPrices;
-    }
+  /**
+   * NOTESET -> not correctly configured
+   * CONSUME -> users need to have PTK in order to execute ops
+   * SUBSCRIPTION -> users with subscription contract, have a flat monthly fee to execute as many request
+   * INTERNAL -> used by Pablock cotracts
+   */
+  enum SubscriptionType {
+    NOTSET,
+    CONSUME,
+    SUBSCRIPTION,
+    INTERNAL
+  }
 
-    uint256 MAX_ALLOWANCE = 2 ^ (256 - 1);
-    uint256 DECIMALS = 18;
-
+  struct WhiteListedContract {
+    uint256 defaultPrice;
+    bool isSet;
+    SubscriptionType subscriptionType;
+    mapping(bytes4 => uint256) functionPrices;
+    mapping(address => bool) allowedAddresses;
+    bool profilationEnabled;
     address contractOwner;
-    address pablockDataAddress;
+  }
 
-    //Supply data
-    uint256 maxSupply;
-    bool lockSupply = false;
+  uint256 constant MAX_ALLOWANCE = 2 ^ (256 - 1);
+  uint256 constant DECIMALS = 18;
 
-    bytes32 public immutable PERMIT_TYPEHASH =
-        keccak256(
-            "Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)"
-        );
+  //Supply data
+  uint256 public maxSupply;
+  bool public lockSupply = false;
 
-    // mapping(address => bool) private contractWhitelist;
-    mapping(address => WhiteListedContract) private contractWhitelist;
-    mapping(address => uint256) private nonces;
+  mapping(address => WhiteListedContract) private contractWhitelist;
+  mapping(address => uint256) private nonces;
 
-    modifier byOwner() {
-        require(contractOwner == msg.sender, "Not allowed");
-        _;
+  modifier byOwner() {
+    require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "Not allowed as owner");
+    _;
+  }
+
+  modifier byPayer() {
+    require(hasRole(PAYER_ROLE, msg.sender), "Not allowed as payer");
+    _;
+  }
+
+  modifier hasAuth() {
+    require(
+      (hasRole(DEFAULT_ADMIN_ROLE, msg.sender) ||
+        hasRole(PAYER_ROLE, msg.sender)) && !paused(),
+      "Not allowed"
+    );
+    _;
+  }
+
+  modifier onlyWhitelisted(address contractAddr) {
+    require(
+      contractWhitelist[contractAddr].isSet && !paused(),
+      "Contract not allowed"
+    );
+    _;
+  }
+
+  modifier checkProfilation(address _contract) {
+    require(
+      (contractWhitelist[_contract].subscriptionType !=
+        SubscriptionType.SUBSCRIPTION ||
+        (contractWhitelist[_contract].subscriptionType ==
+          SubscriptionType.SUBSCRIPTION &&
+          !contractWhitelist[_contract].profilationEnabled) ||
+        (contractWhitelist[_contract].subscriptionType ==
+          SubscriptionType.SUBSCRIPTION &&
+          contractWhitelist[_contract].allowedAddresses[msg.sender])) &&
+        !paused(),
+      "User not allowed to execute function"
+    );
+    _;
+  }
+
+  constructor(uint256 _maxSupply) ERC20("PablockToken", "PTK") {
+    _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
+    maxSupply = _maxSupply;
+  }
+
+  function initialize(address _owner) public byOwner {
+    _setupRole(DEFAULT_ADMIN_ROLE, _owner);
+  }
+
+  function setPayer(address _payer) public byOwner {
+    _setupRole(PAYER_ROLE, _payer);
+  }
+
+  function requestToken(address to, uint256 mintQuantity) public hasAuth {
+    if (lockSupply) {
+      require(
+        (maxSupply >= totalSupply() + mintQuantity),
+        "Would exceed max supply"
+      );
     }
 
-    modifier onlyWhitelisted() {
-        require(contractWhitelist[msg.sender].isSet, "Contract not allowed");
-        _;
+    _mint(to, mintQuantity * 10**DECIMALS);
+  }
+
+  /**
+   * This function allow auth address to add trusted contract to enabled transaction relay
+   */
+  function addContractToWhitelist(
+    address _contract,
+    uint256 _price,
+    uint256 _type
+  ) public hasAuth {
+    contractWhitelist[_contract].isSet = true;
+    contractWhitelist[_contract].defaultPrice = _price;
+    contractWhitelist[_contract].subscriptionType = SubscriptionType(_type);
+    contractWhitelist[_contract].contractOwner = msg.sender;
+  }
+
+  /**
+   * This function allows auth address to remove contract to transaction relay
+   */
+  function removeContractFromWhitelist(address _contract) public hasAuth {
+    contractWhitelist[_contract].isSet = false;
+  }
+
+  /**
+   * This function allows to specify a PTK price for a determined function call
+   */
+  function addFunctionPrice(
+    address _contract,
+    bytes4 _functionSig,
+    uint256 price
+  ) public hasAuth {
+    contractWhitelist[_contract].functionPrices[_functionSig] = price;
+  }
+
+  /**
+   * Getter for function price, given contract and function signature it return PTK price for function execution
+   */
+  function getFunctionPrice(address _contract, bytes4 _functionSig)
+    public
+    view
+    returns (uint256 price)
+  {
+    return contractWhitelist[_contract].functionPrices[_functionSig];
+  }
+
+  /**
+   * Allows auth users to add a subscription second user
+   */
+  function setSubUserAddr(
+    address contractAddr,
+    address userAddress,
+    bool status
+  ) public hasAuth {
+    contractWhitelist[contractAddr].allowedAddresses[userAddress] = status;
+  }
+
+  function changeProfilationStatus(address contractAddr, bool status) public {
+    require(
+      contractWhitelist[contractAddr].contractOwner == msg.sender,
+      "Address not authorized"
+    );
+    contractWhitelist[contractAddr].profilationEnabled = status;
+  }
+
+  function changeSupplyData(uint256 _maxSupply, bool _lockSupply)
+    public
+    hasAuth
+  {
+    maxSupply = _maxSupply;
+    lockSupply = _lockSupply;
+  }
+
+  function receiveAndBurn(
+    address _contract,
+    bytes4 _functionSig,
+    address addr
+  )
+    public
+    onlyWhitelisted(_contract)
+    checkProfilation(_contract)
+    returns (bool)
+  {
+    if (
+      (hasRole(DEFAULT_ADMIN_ROLE, msg.sender) &&
+        contractWhitelist[_contract].subscriptionType ==
+        SubscriptionType.CONSUME) ||
+      (msg.sender == _contract &&
+        contractWhitelist[_contract].subscriptionType ==
+        SubscriptionType.INTERNAL)
+    ) {
+      _burn(addr, getPrice(_contract, _functionSig) * 10**DECIMALS);
     }
+    return true;
+  }
 
-    constructor(uint256 _maxSupply) ERC20("PablockToken", "PTK") EIP712Base("PablockToken", "0.0.1") {
-        contractOwner = msg.sender;
-        maxSupply = _maxSupply;
-
-       
+  function getPrice(address _contract, bytes4 _functionSig)
+    internal
+    view
+    returns (uint256)
+  {
+    if (contractWhitelist[_contract].functionPrices[_functionSig] == 0) {
+      return contractWhitelist[_contract].defaultPrice;
+    } else {
+      return contractWhitelist[_contract].functionPrices[_functionSig];
     }
+  }
 
-    function initialize(address _owner, address _pablockDataAddress)
-        public
-        byOwner
-    {
-        contractOwner = _owner;
-        pablockDataAddress = _pablockDataAddress;
+  function setPauseStatus(bool status) public byOwner {
+    if (status) {
+      _pause();
+    } else {
+      _unpause();
     }
+  }
 
-    function requestToken(address to, uint256 mintQuantity) public byOwner {
-        if (lockSupply) {
-            require(
-                (maxSupply >= totalSupply() + mintQuantity),
-                "Would exceed max supply"
-            );
-        }
+  function getContractStatus(address _contract) public view returns (bool) {
+    return contractWhitelist[_contract].isSet;
+  }
 
-        _mint(to, mintQuantity * 10**DECIMALS);
-    }
+  function getNonces(address addr) external view returns (uint256) {
+    return nonces[addr];
+  }
 
-    function addContractToWhitelist(
-        address _contract,
-        uint256 _price,
-        uint256 _type
-    ) public byOwner {
-        contractWhitelist[_contract].isSet = true;
-        contractWhitelist[_contract].defaultPrice = _price;
-        contractWhitelist[_contract].subscriptionType = SubscriptionType(_type);
-    }
-
-    function removeContractFromWhitelist(address _contract) public byOwner {
-        contractWhitelist[_contract].isSet = false;
-    }
-
-    function addFunctionPrice(
-        address _contract,
-        bytes4 _functionSig,
-        uint256 price
-    ) public byOwner {
-        contractWhitelist[_contract].functionPrices[_functionSig] = price;
-    }
-
-    function getFunctionPrice(address _contract, bytes4 _functionSig)
-        public
-        view
-        returns (uint256 price)
-    {
-        return contractWhitelist[_contract].functionPrices[_functionSig];
-    }
-
-    function changeOwner(address _newOwner) public byOwner {
-        contractOwner = _newOwner;
-    }
-
-    function changeSupplyData(uint256 _maxSupply, bool _lockSupply)
-        public
-        byOwner
-    {
-        maxSupply = _maxSupply;
-        lockSupply = _lockSupply;
-    }
-
-    function unlimitedApprove() external {
-        _approve(msg.sender, address(this), MAX_ALLOWANCE);
-    }
-
-    function receiveAndBurn(
-        address _contract,
-        bytes4 _functionSig,
-        address addr
-    ) public onlyWhitelisted returns (bool) {
-        if (
-             (msg.sender != contractOwner && contractWhitelist[_contract].subscriptionType ==
-            SubscriptionType.CONSUME && contractWhitelist[_contract].subscriptionType !=
-            SubscriptionType.NOTSET) || (msg.sender ==  _contract && contractWhitelist[_contract].subscriptionType == SubscriptionType.INTERNAL)
-        ) {
-            _burn(addr, getPrice(_contract, _functionSig) * 10**DECIMALS);
-        }
-        return true;
-    }
-
-    function getPrice(address _contract, bytes4 _functionSig)
-        internal
-        view
-        returns (uint256)
-    {
-        if (contractWhitelist[_contract].functionPrices[_functionSig] == 0) {
-            return contractWhitelist[_contract].defaultPrice;
-        } else {
-            return contractWhitelist[_contract].functionPrices[_functionSig];
-        }
-    }
-
-    function getContractStatus(address _contract) public view returns (bool) {
-        return contractWhitelist[_contract].isSet;
-    }
-
-    function requestPermit(
-        address owner,
-        address spender,
-        uint256 amount,
-        uint256 deadline,
-        uint8 v,
-        bytes32 r,
-        bytes32 s
-    ) public {
-        bytes32 hashStruct = keccak256(
-            abi.encode(
-                PERMIT_TYPEHASH,
-                owner,
-                spender,
-                amount,
-                nonces[owner]++,
-                deadline
-            )
-        );
-
-        bytes32 hash = toTypedMessageHash(hashStruct, address(this));
-
-        address signer = ecrecover(hash, v, r, s);
-
-        require(
-            signer != address(0) && signer == owner,
-            "PTK Permit: invalid signature"
-        );
-
-        if (msg.sender != spender) {
-            _approve(owner, msg.sender, amount * 10**DECIMALS);
-        }
-        _approve(owner, spender, amount * 10**DECIMALS);
-    }
-
-    function getNonces(address addr) external view returns (uint256) {
-        return nonces[addr];
-    }
-
-    function getVersion() public pure returns (string memory) {
-        return "PablockToken version 0.2.2 (Gasless)";
-    }
+  function getVersion() public pure returns (string memory) {
+    return "PablockToken version 0.2.4";
+  }
 }

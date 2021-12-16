@@ -1,38 +1,63 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.7.4;
+pragma solidity ^0.8.9;
 
 import "../PablockMetaTxReceiver.sol";
 import "../PablockToken.sol";
 
 contract PablockNotarization is PablockMetaTxReceiver {
+  address private pablockTokenAddress;
 
-    address private contractOwner;
-    address private pablockTokenAddress;
+  event Notarize(bytes32 hash, string uri, address applicant, string appId);
 
-    event Notarize(bytes32 hash, string uri, address applicant, string appId);
+  mapping(address => bool) authAddresses;
 
-    constructor(address _pablockTokenAddress, address _metaTxAddress) PablockMetaTxReceiver("PablockNotarization", "0.1.0", _metaTxAddress){
-        contractOwner = msg.sender;
-        pablockTokenAddress = _pablockTokenAddress;
+  constructor(
+    address _pablockTokenAddress,
+    address _metaTxAddress,
+    address _payer
+  ) PablockMetaTxReceiver("PablockNotarization", "0.1.1") {
+    pablockTokenAddress = _pablockTokenAddress;
+
+    setMetaTransaction(_metaTxAddress);
+    setPayer(_payer);
+  }
+
+  modifier isInitialized() {
+    require(pablockTokenAddress != address(0), "Contract not initialized");
+    _;
+  }
+
+  function initialize(address contractAddr) public byOwner {
+    pablockTokenAddress = contractAddr;
+  }
+
+  function needToPay() internal view returns (bool) {
+    return
+      !hasRole(DEFAULT_ADMIN_ROLE, msgSender()) &&
+      !hasRole(PAYER_ROLE, msgSender());
+  }
+
+  function setPauseStatus(bool status) public byOwner {
+    if (status) {
+      _pause();
+    } else {
+      _unpause();
     }
+  }
 
-    modifier byOwner {
-        require(contractOwner == msg.sender, "Not allowed");
-        _;
+  function notarize(
+    bytes32 hash,
+    string memory uri,
+    address applicant,
+    string memory appId
+  ) public isInitialized {
+    if (needToPay()) {
+      PablockToken(pablockTokenAddress).receiveAndBurn(
+        address(this),
+        msg.sig,
+        applicant
+      );
     }
-
-    modifier isInitialized {
-        require(pablockTokenAddress != address(0), "Contract not initialized");
-        _;
-    }
-
-    function initialize (address contractAddr) public byOwner {
-        pablockTokenAddress = contractAddr;
-    }
-    
-    function notarize(bytes32 hash, string memory uri, address applicant, string memory appId) public isInitialized {
-        PablockToken(pablockTokenAddress).receiveAndBurn(address(this), msg.sig, applicant);
-        emit Notarize(hash, uri, applicant, appId);
-    }
-
+    emit Notarize(hash, uri, applicant, appId);
+  }
 }

@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: MIT
-pragma solidity ^0.7.4;
+pragma solidity ^0.8.9;
 
 contract EIP712Base {
     struct EIP712Domain {
@@ -43,7 +43,7 @@ contract EIP712Base {
         registeredContracts[contractAddress].registered = true;
     }
 
-    function getChainID() internal pure returns (uint256 id) {
+    function getChainID() internal view returns (uint256 id) {
         assembly {
             id := chainid()
         }
