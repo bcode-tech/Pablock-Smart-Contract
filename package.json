@@ -1,5 +1,4 @@
 {
-<<<<<<< HEAD
   "name": "pablock-smartcontracts",
   "version": "1.0.1",
   "description": "",
@@ -18,9 +17,6 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-=======
-  "name": "hardhat-project",
->>>>>>> feature/access_control
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.3",
     "@nomiclabs/hardhat-etherscan": "^2.1.8",
