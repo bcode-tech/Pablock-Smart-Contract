@@ -12,3 +12,4 @@ artifacts
 *.secret
 
 ganachePrivateKeys.json
+NOTES.md

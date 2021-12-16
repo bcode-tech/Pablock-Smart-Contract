@@ -7,6 +7,7 @@ import { getTransactionData } from "../utility";
 
 import PablockNotarizationArtifact from "../artifacts/contracts/pablock/PablockNotarization.sol/PablockNotarization.json";
 import PablockNFTArtifact from "../artifacts/contracts/pablock/PablockNFT.sol/PablockNFT.json";
+import PablockMUltiSignFactoryArtifact from "../artifacts/contracts/pablock/PablockMultiSignFactory.sol/PablockMultiSignFactory.json";
 import PablockMultiSignArtifact from "../artifacts/contracts/pablock/PablockMultiSignNotarization.sol/PablockMultiSignNotarization.json";
 
 const PRIVATE_KEYS = [
@@ -100,6 +101,24 @@ describe("Pablock Smart Contracts", function () {
         3,
       );
       await pablockToken.addContractToWhitelist(metaTransaction.address, 1, 3);
+
+      /**
+       * To unlockToken you need to pay 2 PTK
+       */
+      await pablockToken.addFunctionPrice(
+        pablockNFT.address, // @ts-ignore
+        new ethers.utils.Interface(PablockNFTArtifact.abi).getSighash(
+          "unlockToken",
+        ),
+        2,
+      );
+      await pablockToken.addFunctionPrice(
+        pablockMultiSignFactory.address, // @ts-ignore
+        new ethers.utils.Interface(
+          PablockMUltiSignFactoryArtifact.abi,
+        ).getSighash("createNewMultiSignNotarization"),
+        2,
+      );
     }
 
     await pablockToken.requestToken(addr1.address, 1);
@@ -348,7 +367,7 @@ describe("Pablock Smart Contracts", function () {
     expect(isUnlocked).equal(true);
 
     expect(await pablockToken.balanceOf(addr2.address)).to.eq(
-      ethers.utils.parseEther("9"),
+      ethers.utils.parseEther("8"),
     );
   });
   it("should be possible to transfer an NFT", async () => {
@@ -364,10 +383,10 @@ describe("Pablock Smart Contracts", function () {
     expect(owner).eq(addr1.address);
 
     /**
-     * Equals to 9 because we are transfering an unlocked token, so we don't spend PTK
+     * Equals to 8 because we are transfering an unlocked token, so we don't spend PTK
      */
     const currentBalance = await pablockToken.balanceOf(addr2.address);
-    expect(currentBalance).to.eq(ethers.utils.parseEther("9"));
+    expect(currentBalance).to.eq(ethers.utils.parseEther("8"));
   });
   it("should be possible to transfer an NFT with meta transaction", async () => {
     const [_, addr1, addr2] = await ethers.getSigners();
@@ -413,56 +432,206 @@ describe("Pablock Smart Contracts", function () {
     expect(owner).eq(addr1.address);
 
     const currentBalance = await pablockToken.balanceOf(addr2.address);
-    expect(currentBalance).to.eq(ethers.utils.parseEther("8"));
+    expect(currentBalance).to.eq(ethers.utils.parseEther("7"));
   });
-  // it("should be able to create a MultiSignature Contract", async () => {
-  //   const [_, addr1, addr2] = await ethers.getSigners();
+  it("should be able to create a MultiSignature Contract", async () => {
+    const [_, addr1, addr2, addr3, addr4] = await ethers.getSigners();
 
-  //   const tx = await pablockMultiSignFactory
-  //     .connect(addr1)
-  //     .createNewMultiSignNotarization(
-  //       "0xb133a0c0e9bee3be20163d2ad31d6248db292aa6dcb1ee087a2aa50e0fc75ae2",
-  //       [addr1.address, addr2.address],
-  //       "prova",
-  //       100000,
-  //     );
+    const tx = await pablockMultiSignFactory
+      .connect(addr2)
+      .createNewMultiSignNotarization(
+        "0xb133a0c0e9bee3be20163d2ad31d6248db292aa6dcb1ee087a2aa50e0fc75ae2",
+        [addr2.address, addr3.address, addr4.address],
+        "prova",
+        100000,
+      );
 
-  //   const res = await tx.wait();
+    const res = await tx.wait();
 
-  //   multiSignAddress = res.events[1].args.multiSignAddress;
+    multiSignAddress = res.events[2].args.multiSignAddress;
 
-  //   expect(res.events[1].event).equal("NewPablockMultiSignNotarization");
-  // });
+    expect(res.events[2].event).equal("NewPablockMultiSignNotarization");
+    const currentBalance = await pablockToken.balanceOf(addr2.address);
+    expect(currentBalance).to.eq(ethers.utils.parseEther("5"));
+  });
 
-  // it("should not be possible to create a MultiSignature Contract without paying tokens", async () => {
-  //   const [_, addr1, addr2, addr3] = await ethers.getSigners();
-  //   await expect(
-  //     pablockMultiSignFactory
-  //       .connect(addr3)
-  //       .createNewMultiSignNotarization(
-  //         "0xb133a0c0e9bee3be20163d2ad31d6248db292aa6dcb1ee087a2aa50e0fc75ae2",
-  //         [addr3.address, addr2.address],
-  //         "prova",
-  //         100000,
-  //       ),
-  //   ).to.be.revertedWith("ERC20: burn amount exceeds balance");
-  // });
+  it("should not be possible to create a MultiSignature Contract without paying tokens", async () => {
+    const [_, addr1, addr2, addr3, addr4] = await ethers.getSigners();
 
-  // it("should sign document", async () => {
-  //   const [_, addr1, addr2] = await ethers.getSigners();
+    await expect(
+      pablockMultiSignFactory
+        .connect(addr4)
+        .createNewMultiSignNotarization(
+          "0xb133a0c0e9bee3be20163d2ad31d6248db292aa6dcb1ee087a2aa50e0fc75ae2",
+          [addr2.address, addr3.address, addr4.address],
+          "prova",
+          100000,
+        ),
+    ).to.be.revertedWith("ERC20: burn amount exceeds balance");
+  });
 
-  //   const multiSignContract = new ethers.Contract(
-  //     multiSignAddress,
-  //     PablockMultiSignArtifact.abi,
-  //   );
-  //   await pablockToken.addContractToWhitelist(multiSignAddress, 1, 3);
+  it("should sign document", async () => {
+    const addr2 = (await ethers.getSigners())[2];
 
-  //   await multiSignContract.connect(addr2).signDocument();
+    const multiSignContract = new ethers.Contract(
+      multiSignAddress,
+      PablockMultiSignArtifact.abi,
+    );
+    await pablockToken.addContractToWhitelist(multiSignAddress, 1, 3);
 
-  //   const status = await multiSignContract
-  //     .connect(addr2)
-  //     .getSignerStatus(addr2.address);
+    await multiSignContract.connect(addr2).signDocument();
+    const status = await multiSignContract
+      .connect(addr2)
+      .getSignerStatus(addr2.address);
+    expect(status).to.be.equal(true);
 
-  //   expect(status).equal(true);
-  // });
+    const currentBalance = await pablockToken.balanceOf(addr2.address);
+    expect(currentBalance).to.eq(ethers.utils.parseEther("4"));
+  });
+  it("should be possible to create multisigncontract with meta transaction", async () => {
+    const [_, addr1, addr2, addr3, addr4] = await ethers.getSigners();
+
+    // @ts-ignore
+    const functionSignature = web3Abi.encodeFunctionCall(
+      PablockMUltiSignFactoryArtifact.abi.find(
+        (el: any) =>
+          el.type === "function" &&
+          el.name === "createNewMultiSignNotarization",
+      ),
+      [
+        "0xb133a0c0e9bee3be20163d2ad31d6248db292aa6dcb1ee087a2aa50e0fc75ae2",
+        [addr2.address, addr3.address, addr4.address],
+        "prova",
+        100000,
+      ],
+    );
+
+    const nonce = await metaTransaction.getNonce(addr2.address);
+
+    const { r, s, v } = await getTransactionData(
+      nonce.toNumber(),
+      functionSignature,
+      addr2.address,
+      PRIVATE_KEYS[2],
+      {
+        name: "PablockMultiSignFactory",
+        version: "0.1.1",
+        address: pablockMultiSignFactory.address,
+      },
+    );
+
+    // const tx = await metaTransaction
+    //   .connect(addr1)
+    //   .executeMetaTransaction(
+    //     pablockMultiSignFactory.address,
+    //     addr2.address,
+    //     functionSignature,
+    //     r,
+    //     s,
+    //     v,
+    //   );
+
+    // const res = await tx.wait();
+
+    // multiSignAddress = res.events[2].args.multiSignAddress;
+    await expect(
+      metaTransaction
+        .connect(addr1)
+        .executeMetaTransaction(
+          pablockMultiSignFactory.address,
+          addr2.address,
+          functionSignature,
+          r,
+          s,
+          v,
+        ),
+    ).emit(pablockMultiSignFactory, "NewPablockMultiSignNotarization");
+
+    // expect(res.events[2].event).equal("NewPablockMultiSignNotarization");
+    const currentBalance = await pablockToken.balanceOf(addr2.address);
+    expect(currentBalance).to.eq(ethers.utils.parseEther("2"));
+  });
+
+  it("should paused pablockToken contract", async () => {
+    await expect(pablockToken.setPauseStatus(true)).emit(
+      pablockToken,
+      "Paused",
+    );
+  });
+
+  it("should failed to update pablockToken contract", async () => {
+    await expect(
+      pablockToken.removeContractFromWhitelist(pablockNFT.address),
+    ).to.be.revertedWith("Not allowed");
+  });
+
+  it("should notarize directly", async () => {
+    const [_, addr1, addr2] = await ethers.getSigners();
+
+    await expect(
+      pablockNotarization
+        .connect(addr2)
+        .notarize(
+          "0xb133a0c0e9bee3be20163d2ad31d6248db292aa6dcb1ee087a2aa50e0fc75ae2",
+          "",
+          addr2.address,
+          "",
+        ),
+    ).to.be.revertedWith("Contract not allowed");
+  });
+
+  it("should block payer to execute metatransaction", async () => {
+    const [_, addr1] = await ethers.getSigners();
+
+    await expect(
+      metaTransaction.revokeRole(
+        await metaTransaction.PAYER_ROLE(),
+        addr1.address,
+      ),
+    ).emit(metaTransaction, "RoleRevoked");
+  });
+
+  it("should notarize with meta transaction through payer", async () => {
+    const [_, addr1, addr2] = await ethers.getSigners();
+
+    // @ts-ignore
+    const functionSignature = web3Abi.encodeFunctionCall(
+      PablockNotarizationArtifact.abi.find(
+        (el: any) => el.type === "function" && el.name === "notarize",
+      ),
+      [
+        "0xb133a0c0e9bee3be20163d2ad31d6248db292aa6dcb1ee087a2aa50e0fc75ae2",
+        "",
+        addr2.address,
+        "",
+      ],
+    );
+
+    const nonce = await metaTransaction.getNonce(addr2.address);
+
+    const { r, s, v } = await getTransactionData(
+      nonce.toNumber(),
+      functionSignature,
+      addr2.address,
+      PRIVATE_KEYS[2],
+      {
+        name: "PablockNotarization",
+        version: "0.1.1",
+        address: pablockNotarization.address,
+      },
+    );
+
+    await expect(
+      metaTransaction
+        .connect(addr1)
+        .executeMetaTransaction(
+          pablockNotarization.address,
+          addr2.address,
+          functionSignature,
+          r,
+          s,
+          v,
+        ),
+    ).to.be.revertedWith("Not allowed to execute meta transaction");
+  });
 });

@@ -64,20 +64,24 @@ contract PablockToken is ERC20, AccessControl, Pausable {
   }
 
   modifier onlyWhitelisted(address contractAddr) {
-    require(contractWhitelist[contractAddr].isSet, "Contract not allowed");
+    require(
+      contractWhitelist[contractAddr].isSet && !paused(),
+      "Contract not allowed"
+    );
     _;
   }
 
   modifier checkProfilation(address _contract) {
     require(
-      contractWhitelist[_contract].subscriptionType !=
+      (contractWhitelist[_contract].subscriptionType !=
         SubscriptionType.SUBSCRIPTION ||
         (contractWhitelist[_contract].subscriptionType ==
           SubscriptionType.SUBSCRIPTION &&
           !contractWhitelist[_contract].profilationEnabled) ||
         (contractWhitelist[_contract].subscriptionType ==
           SubscriptionType.SUBSCRIPTION &&
-          contractWhitelist[_contract].allowedAddresses[msg.sender]),
+          contractWhitelist[_contract].allowedAddresses[msg.sender])) &&
+        !paused(),
       "User not allowed to execute function"
     );
     _;

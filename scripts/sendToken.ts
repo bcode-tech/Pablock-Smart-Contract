@@ -14,10 +14,11 @@ const provider = new ethers.providers.JsonRpcProvider(
 // const contractOwner = new ethers.Wallet(maticMnemonic);
 const contractOwner = new ethers.Wallet(
   // "0x52f6882af2362a0f3b9efc67e2521b6a698283e88ebb5428285168ea303fd15b", //LOCAL
-  mumbaiSecret, // MUMBAI
+  // mumbaiSecret, // MUMBAI
+  maticSecret,
 );
 
-const contractAddress = "0x22D1389a75F6B038ea076125B8774545aC697551";
+const contractAddress = "0x2c7A6BF1CbDa1BFffB3573e45AE836eEcC6bcf5F";
 
 const pablockToken = new ethers.Contract(
   "0x70b2b8c820d62e7bd95e296dcb8de6a18ad2bca5", // Mumbai
