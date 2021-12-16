@@ -45,10 +45,12 @@ const config: HardhatUserConfig = {
     matic: {
       url: `https://polygon-mainnet.infura.io/v3/${infuraKey}`,
       accounts: [maticPrivate],
+      gasPrice: 50000000000,
     },
     mumbai: {
       url: `https://polygon-mumbai.infura.io/v3/${infuraKey}`,
       accounts: [mumbaiPrivate],
+      gasPrice: 5000000000,
     },
     goerli: {
       url: `https://goerli.infura.io/v3/${infuraKey}`,

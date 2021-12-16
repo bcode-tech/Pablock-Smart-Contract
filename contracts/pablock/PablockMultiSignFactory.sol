@@ -46,11 +46,6 @@ contract PablockMultiSignFactory is PablockMetaTxReceiver {
     // return _multiSign;
   }
 
-  modifier byOwner() {
-    require(contractOwner == msg.sender, "Not allowed");
-    _;
-  }
-
   function initialize(address contractAddr) public byOwner {
     pablockTokenAddress = contractAddr;
   }

@@ -5,6 +5,11 @@
 // Runtime Environment's members available in the global scope.
 import { ethers } from "hardhat";
 
+import PablockNFTArtifact from "../artifacts/contracts/pablock/PablockNFT.sol/PablockNFT.json";
+import PablockMUltiSignFactoryArtifact from "../artifacts/contracts/pablock/PablockMultiSignFactory.sol/PablockMultiSignFactory.json";
+
+const PAYER = "0x6d2610394B36fAB55926Dd4739da536F59b20F5d";
+
 async function main() {
   // Hardhat always runs the compile task when running scripts with its command
   // line interface.
@@ -25,50 +30,77 @@ async function main() {
   const PablockMultiSignFactory = await ethers.getContractFactory(
     "PablockMultiSignFactory",
   );
-
   const metaTransaction = await MetaTransaction.deploy(
     "PablockMetaTransaction",
     "0.1.0",
+    PAYER,
+    { gasLimit: 10000000 },
   );
-
   await metaTransaction.deployed();
+  console.log("Pablock MetaTransaction deployed!");
 
   if (metaTransaction.address) {
-    const pablockToken = await PablockToken.deploy(1000000000);
+    const pablockToken = await PablockToken.deploy(1000000000, {
+      gasLimit: 10000000,
+    });
     await pablockToken.deployed();
+    console.log("PablockToken deployed!");
+    await pablockToken.setPayer(PAYER);
+    console.log("Set payer for PablockToken");
 
     const pablockNotarization = await PablockNotarization.deploy(
       pablockToken.address,
       metaTransaction.address,
+      PAYER,
+      { gasLimit: 10000000 },
     );
     await pablockNotarization.deployed();
+    console.log("PablockNotarization deployed!");
 
     const pablockNFT = await PablockNFT.deploy(
       "PablockNFT",
       "PTNFT",
       pablockToken.address,
       metaTransaction.address,
+      { gasLimit: 10000000 },
     );
     await pablockNFT.deployed();
+    console.log("PablockNFT deployed!");
+
+    await metaTransaction.initialize(pablockToken.address, {
+      gasLimit: 100000,
+    });
+    console.log("Pablock MetaTransaction initialized!");
 
     const multisignFactory = await PablockMultiSignFactory.deploy(
       pablockToken.address,
       metaTransaction.address,
+      { gasLimit: 10000000 },
     );
     await multisignFactory.deployed();
+    console.log("Pablock MultiSign Factory deployed!");
 
-    await metaTransaction.initialize(pablockToken.address);
-
-    await pablockToken.addContractToWhitelist(pablockToken.address, 1, 3);
+    await pablockToken.addContractToWhitelist(pablockToken.address, 1, 3, {
+      gasLimit: 100000,
+    });
     await pablockToken.addContractToWhitelist(
       pablockNotarization.address,
       1,
       3,
+      { gasLimit: 100000 },
     );
 
-    await pablockToken.addContractToWhitelist(pablockNFT.address, 1, 3);
-    await pablockToken.addContractToWhitelist(multisignFactory.address, 1, 3);
-    await pablockToken.addContractToWhitelist(metaTransaction.address, 1, 3);
+    await pablockToken.addContractToWhitelist(pablockNFT.address, 1, 3, {
+      gasLimit: 100000,
+    });
+    await pablockToken.addContractToWhitelist(multisignFactory.address, 1, 3, {
+      gasLimit: 100000,
+    });
+    await pablockToken.addContractToWhitelist(metaTransaction.address, 1, 3, {
+      gasLimit: 100000,
+    });
+    console.log("Contracts added to PablockToken whitelist!");
+
     // await pablockToken.addContractToWhitelist(
     //   testMetaTransaction.address,
     //   1,
@@ -79,6 +111,27 @@ async function main() {
     //   testMetaTransaction.address,
     //   true
     // );
+
+    /**
+     * To unlockToken and create a multiSign contract you need to pay 2 PTK
+     */
+    await pablockToken.addFunctionPrice(
+      pablockNFT.address, // @ts-ignore
+      new ethers.utils.Interface(PablockNFTArtifact.abi).getSighash(
+        "unlockToken",
+      ),
+      2,
+      { gasLimit: 100000 },
+    );
+    await pablockToken.addFunctionPrice(
+      multisignFactory.address, // @ts-ignore
+      new ethers.utils.Interface(
+        PablockMUltiSignFactoryArtifact.abi,
+      ).getSighash("createNewMultiSignNotarization"),
+      2,
+      { gasLimit: 100000 },
+    );
+    console.log("Functions' prices added!");
 
     console.log("PABLOCK_TOKEN_ADDRESS=", pablockToken.address);
     console.log("PABLOCK_META_TRANSACTION=", metaTransaction.address);

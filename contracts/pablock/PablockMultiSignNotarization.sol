@@ -23,6 +23,8 @@ contract PablockMultiSignNotarization is PablockMetaTxReceiver {
   string private uri;
   uint256 private expirationDate;
 
+  event SignDocument(address signer, address contractAddr);
+
   // Signer[] private signers;
 
   constructor(
@@ -59,6 +61,8 @@ contract PablockMultiSignNotarization is PablockMetaTxReceiver {
     );
 
     signers[msgSender()].signed = true;
+
+    emit SignDocument(msgSender(), address(this));
   }
 
   function getNotarizationData()
@@ -82,7 +86,7 @@ contract PablockMultiSignNotarization is PablockMetaTxReceiver {
     return signers[signer].signed;
   }
 
-  function getVersion() public view returns (string memory) {
+  function getVersion() public pure returns (string memory) {
     return "Version 0.1.0";
   }
 }
