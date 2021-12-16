@@ -1,5 +1,26 @@
 {
+<<<<<<< HEAD
   "name": "hardhat-project",
+=======
+  "name": "pablock-smartcontracts",
+  "version": "1.0.1",
+  "description": "",
+  "main": "truffle-config.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "npx truffle test --network local",
+    "deploy": "npx truffle deploy --network local",
+    "test:mumbai": "npx truffle test --network mumbai",
+    "deploy:mumbai": "npx truffle deploy --network mumbai",
+    "start:ganache": "npx ganache-cli --port 7545",
+    "start:ganache-ci": "ganache-cli --port 7545 > /dev/null 2>&1 &"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+>>>>>>> dev
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.3",
     "@nomiclabs/hardhat-etherscan": "^2.1.8",
