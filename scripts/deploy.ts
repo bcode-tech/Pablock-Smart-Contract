@@ -6,7 +6,7 @@
 import { ethers } from "hardhat";
 
 import PablockNFTArtifact from "../artifacts/contracts/pablock/PablockNFT.sol/PablockNFT.json";
-import PablockMUltiSignFactoryArtifact from "../artifacts/contracts/pablock/PablockMultiSignFactory.sol/PablockMultiSignFactory.json";
+import PablockMultiSignFactoryArtifact from "../artifacts/contracts/pablock/PablockMultiSignFactory.sol/PablockMultiSignFactory.json";
 
 const PAYER = "0x6d2610394B36fAB55926Dd4739da536F59b20F5d";
 
@@ -126,7 +126,7 @@ async function main() {
     await pablockToken.addFunctionPrice(
       multisignFactory.address, // @ts-ignore
       new ethers.utils.Interface(
-        PablockMUltiSignFactoryArtifact.abi,
+        PablockMultiSignFactoryArtifact.abi,
       ).getSighash("createNewMultiSignNotarization"),
       2,
       { gasLimit: 100000 },
