@@ -2,7 +2,6 @@
 pragma solidity ^0.8.9;
 
 import "../PablockMetaTxReceiver.sol";
-import "../PablockToken.sol";
 
 contract PablockNotarization is PablockMetaTxReceiver {
   address private pablockTokenAddress;
@@ -52,7 +51,7 @@ contract PablockNotarization is PablockMetaTxReceiver {
     string memory appId
   ) public isInitialized {
     if (needToPay()) {
-      PablockToken(pablockTokenAddress).receiveAndBurn(
+      IPablockToken(pablockTokenAddress).receiveAndBurn(
         address(this),
         msg.sig,
         applicant

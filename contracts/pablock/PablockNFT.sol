@@ -3,20 +3,23 @@ pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
-import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/Counters.sol";
 
 import "../PablockMetaTxReceiver.sol";
-import "../PablockToken.sol";
 
 contract PablockNFT is
   ERC721Enumerable,
   ERC721URIStorage,
+  Ownable,
+  Pausable,
   PablockMetaTxReceiver
 {
-  address private contractOwner;
+  using Counters for Counters.Counter;
+
   address private pablockTokenAddress;
-  uint256 private counter;
+  Counters.Counter private counter;
 
   mapping(address => uint256) private nonces;
   mapping(uint256 => bool) private unlockedTokens;
@@ -32,9 +35,6 @@ contract PablockNFT is
     ERC721(_tokenName, _tokenSymbol)
     PablockMetaTxReceiver(_tokenName, "0.2.1")
   {
-    counter = 0;
-    contractOwner = msg.sender;
-
     pablockTokenAddress = _pablockTokenAddress;
 
     setMetaTransaction(_metaTxAddress);
@@ -59,14 +59,14 @@ contract PablockNFT is
     // uint[quantity] memory indexes;
 
     for (uint256 i = 0; i < quantity; i++) {
-      counter++;
-      _safeMint(to, counter);
-      _setTokenURI(counter, _uri);
-      unlockedTokens[counter] = false;
-      indexes[i] = counter;
+      counter.increment();
+      _safeMint(to, counter.current());
+      _setTokenURI(counter.current(), _uri);
+      unlockedTokens[counter.current()] = false;
+      indexes[i] = counter.current();
     }
 
-    PablockToken(pablockTokenAddress).receiveAndBurn(
+    IPablockToken(pablockTokenAddress).receiveAndBurn(
       address(this),
       msg.sig,
       to
@@ -81,7 +81,7 @@ contract PablockNFT is
     uint256 tokenId
   ) public override isInitialized {
     if (!unlockedTokens[tokenId]) {
-      PablockToken(pablockTokenAddress).receiveAndBurn(
+      IPablockToken(pablockTokenAddress).receiveAndBurn(
         address(this),
         msg.sig,
         msgSender()
@@ -94,7 +94,7 @@ contract PablockNFT is
   function unlockToken(uint256 tokenId) public isInitialized {
     require(ownerOf(tokenId) == msgSender());
 
-    PablockToken(pablockTokenAddress).receiveAndBurn(
+    IPablockToken(pablockTokenAddress).receiveAndBurn(
       address(this),
       msg.sig,
       msgSender()
