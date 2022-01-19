@@ -2,7 +2,6 @@
 pragma solidity ^0.8.9;
 
 import "../EIP712MetaTransaction.sol";
-import "../PablockToken.sol";
 
 import "../PablockMetaTxReceiver.sol";
 
@@ -24,7 +23,7 @@ contract TestMetaTransaction is PablockMetaTxReceiver {
   }
 
   function increment() public {
-    // PablockToken(pablockTokenAddress).receiveAndBurn(address(this), msg.sig, applicant);
+    // IPablockToken(pablockTokenAddress).receiveAndBurn(address(this), msg.sig, applicant);
     counter = counter + 1;
   }
 
@@ -33,7 +32,7 @@ contract TestMetaTransaction is PablockMetaTxReceiver {
   }
 
   function setCounter(uint256 _counter, address account) public {
-    PablockToken(pablockTokenAddress).receiveAndBurn(
+    IPablockToken(pablockTokenAddress).receiveAndBurn(
       address(this),
       msg.sig,
       account
@@ -50,7 +49,7 @@ contract TestMetaTransaction is PablockMetaTxReceiver {
     string memory uri,
     address applicant
   ) public initialized {
-    PablockToken(pablockTokenAddress).receiveAndBurn(
+    IPablockToken(pablockTokenAddress).receiveAndBurn(
       address(this),
       msg.sig,
       applicant

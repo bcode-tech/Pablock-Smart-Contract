@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 
-import "./PablockToken.sol";
+import "./interfaces/IPablockToken.sol";
 
 contract EIP712MetaTransaction is EIP712Base, AccessControl, Pausable {
   using SafeMath for uint256;
@@ -119,7 +119,7 @@ contract EIP712MetaTransaction is EIP712Base, AccessControl, Pausable {
       abi.encodePacked(functionSignature, userAddress)
     );
 
-    PablockToken(pablockTokenAddress).receiveAndBurn(
+    IPablockToken(pablockTokenAddress).receiveAndBurn(
       destinationContract,
       destinationFunctionSig,
       userAddress

@@ -8,7 +8,6 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
 import "../PablockMetaTxReceiver.sol";
-import "../PablockToken.sol";
 
 contract PablockNFT is
   ERC721Enumerable,
@@ -67,7 +66,7 @@ contract PablockNFT is
       indexes[i] = counter.current();
     }
 
-    PablockToken(pablockTokenAddress).receiveAndBurn(
+    IPablockToken(pablockTokenAddress).receiveAndBurn(
       address(this),
       msg.sig,
       to
@@ -82,7 +81,7 @@ contract PablockNFT is
     uint256 tokenId
   ) public override isInitialized {
     if (!unlockedTokens[tokenId]) {
-      PablockToken(pablockTokenAddress).receiveAndBurn(
+      IPablockToken(pablockTokenAddress).receiveAndBurn(
         address(this),
         msg.sig,
         msgSender()
@@ -95,7 +94,7 @@ contract PablockNFT is
   function unlockToken(uint256 tokenId) public isInitialized {
     require(ownerOf(tokenId) == msgSender());
 
-    PablockToken(pablockTokenAddress).receiveAndBurn(
+    IPablockToken(pablockTokenAddress).receiveAndBurn(
       address(this),
       msg.sig,
       msgSender()

@@ -41,6 +41,7 @@ const config: HardhatUserConfig = {
   networks: {
     local: {
       url: "http://127.0.0.1:7545",
+      blockGasLimit: 100000000000,
     },
     matic: {
       url: `https://polygon-mainnet.infura.io/v3/${infuraKey}`,

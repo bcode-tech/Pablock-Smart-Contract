@@ -3,7 +3,6 @@
 pragma solidity ^0.8.9;
 
 import "../PablockMetaTxReceiver.sol";
-import "../PablockToken.sol";
 
 pragma experimental ABIEncoderV2;
 
@@ -54,7 +53,7 @@ contract PablockMultiSignNotarization is PablockMetaTxReceiver {
     // require(signers[indexOfSigners[msgSender()]].initialized, "Signers does not exists");
     require(signers[msgSender()].initialized, "Signers does not exists");
 
-    PablockToken(pablockTokenAddress).receiveAndBurn(
+    IPablockToken(pablockTokenAddress).receiveAndBurn(
       address(this),
       msg.sig,
       msgSender()

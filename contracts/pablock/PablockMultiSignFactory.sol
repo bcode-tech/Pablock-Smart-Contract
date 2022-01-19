@@ -2,7 +2,6 @@
 pragma solidity ^0.8.9;
 
 import "./PablockMultiSignNotarization.sol";
-import "../PablockToken.sol";
 
 contract PablockMultiSignFactory is PablockMetaTxReceiver {
   address private contractOwner;
@@ -27,7 +26,7 @@ contract PablockMultiSignFactory is PablockMetaTxReceiver {
   ) public initialized {
     //returns (PablockMultiSignNotarization){
 
-    PablockToken(pablockTokenAddress).receiveAndBurn(
+    IPablockToken(pablockTokenAddress).receiveAndBurn(
       address(this),
       msg.sig,
       msgSender()
