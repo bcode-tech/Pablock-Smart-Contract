@@ -52,7 +52,7 @@ contract EIP712MetaTransaction is EIP712Base, AccessControl, Pausable {
     _;
   }
 
-  modifier hasAuth() {
+  modifier hasAuth() virtual {
     require(
       (hasRole(DEFAULT_ADMIN_ROLE, msgSender()) ||
         hasRole(PAYER_ROLE, msgSender())) && !paused(),
