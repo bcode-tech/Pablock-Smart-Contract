@@ -31,7 +31,7 @@ contract PablockMetaTxReceiver is AccessControl, Pausable {
     _;
   }
 
-  modifier hasAuth() {
+  modifier hasAuth() virtual {
     require(
       (hasRole(DEFAULT_ADMIN_ROLE, msg.sender) ||
         hasRole(PAYER_ROLE, msg.sender)) && !paused(),
