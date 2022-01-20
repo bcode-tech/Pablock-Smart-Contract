@@ -3,6 +3,7 @@
 pragma solidity ^0.8.9;
 
 import "../PablockMetaTxReceiver.sol";
+import "../interfaces/IPablockToken.sol";
 
 pragma experimental ABIEncoderV2;
 

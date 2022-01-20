@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
-import "./EIP712MetaTransaction.sol";
+import "./interfaces/IEIP712MetaTransaction.sol";
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
@@ -31,7 +31,7 @@ contract PablockMetaTxReceiver is AccessControl, Pausable {
     _;
   }
 
-  modifier hasAuth() virtual {
+  modifier hasAuth() {
     require(
       (hasRole(DEFAULT_ADMIN_ROLE, msg.sender) ||
         hasRole(PAYER_ROLE, msg.sender)) && !paused(),
@@ -44,7 +44,7 @@ contract PablockMetaTxReceiver is AccessControl, Pausable {
     _setupRole(DEFAULT_ADMIN_ROLE, msgSender());
 
     metaTxAddress = metaContract;
-    EIP712MetaTransaction(metaContract).registerContract(
+    IEIP712MetaTransaction(metaContract).registerContract(
       metaTxName,
       version,
       address(this)

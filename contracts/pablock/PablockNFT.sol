@@ -8,6 +8,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
 import "../PablockMetaTxReceiver.sol";
+import "../interfaces/IPablockToken.sol";
 
 contract PablockNFT is
   ERC721Enumerable,
