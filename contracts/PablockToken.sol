@@ -6,8 +6,6 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "./lib/EIP712Base.sol";
 
-import "hardhat/console.sol";
-
 contract PablockToken is ERC20, AccessControl, Pausable {
   bytes32 public constant PAYER_ROLE = keccak256("PAYER");
 
@@ -15,7 +13,7 @@ contract PablockToken is ERC20, AccessControl, Pausable {
    * NOTESET -> not correctly configured
    * CONSUME -> users need to have PTK in order to execute ops
    * SUBSCRIPTION -> users with subscription contract, have a flat monthly fee to execute as many request
-   * INTERNAL -> used by Pablock cotracts
+   * INTERNAL -> used by Pablock contracts
    */
   enum SubscriptionType {
     NOTSET,
@@ -29,8 +27,6 @@ contract PablockToken is ERC20, AccessControl, Pausable {
     bool isSet;
     SubscriptionType subscriptionType;
     mapping(bytes4 => uint256) functionPrices;
-    mapping(address => bool) allowedAddresses;
-    bool profilationEnabled;
     address contractOwner;
   }
 
@@ -43,6 +39,8 @@ contract PablockToken is ERC20, AccessControl, Pausable {
 
   mapping(address => WhiteListedContract) private contractWhitelist;
   mapping(address => uint256) private nonces;
+
+  event ContractWhitelisted(address coontractAddress, address contractOwner);
 
   modifier byOwner() {
     require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "Not allowed as owner");
@@ -71,22 +69,6 @@ contract PablockToken is ERC20, AccessControl, Pausable {
     _;
   }
 
-  modifier checkProfilation(address _contract) {
-    require(
-      (contractWhitelist[_contract].subscriptionType !=
-        SubscriptionType.SUBSCRIPTION ||
-        (contractWhitelist[_contract].subscriptionType ==
-          SubscriptionType.SUBSCRIPTION &&
-          !contractWhitelist[_contract].profilationEnabled) ||
-        (contractWhitelist[_contract].subscriptionType ==
-          SubscriptionType.SUBSCRIPTION &&
-          contractWhitelist[_contract].allowedAddresses[msg.sender])) &&
-        !paused(),
-      "User not allowed to execute function"
-    );
-    _;
-  }
-
   constructor(uint256 _maxSupply) ERC20("PablockToken", "PTK") {
     _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
     maxSupply = _maxSupply;
@@ -111,18 +93,23 @@ contract PablockToken is ERC20, AccessControl, Pausable {
     _mint(to, mintQuantity * 10**DECIMALS);
   }
 
-  /**
-   * This function allow auth address to add trusted contract to enabled transaction relay
-   */
+  /// @notice This function allow auth address to add trusted contract to enabled transaction relay
+  /// @param _contract Contract's address to whitelist
+  /// @param _price Default price per contract function
+  /// @param _type Type of subscription
+  /// @param _contractOwner Owner of contract or payer in case of SUBSCRIPTION type contract (Address with PTK)
   function addContractToWhitelist(
     address _contract,
     uint256 _price,
-    uint256 _type
+    uint256 _type,
+    address _contractOwner
   ) public hasAuth {
     contractWhitelist[_contract].isSet = true;
     contractWhitelist[_contract].defaultPrice = _price;
     contractWhitelist[_contract].subscriptionType = SubscriptionType(_type);
-    contractWhitelist[_contract].contractOwner = msg.sender;
+    contractWhitelist[_contract].contractOwner = _contractOwner;
+
+    emit ContractWhitelisted(_contract, _contractOwner);
   }
 
   /**
@@ -154,25 +141,6 @@ contract PablockToken is ERC20, AccessControl, Pausable {
     return contractWhitelist[_contract].functionPrices[_functionSig];
   }
 
-  /**
-   * Allows auth users to add a subscription second user
-   */
-  function setSubUserAddr(
-    address contractAddr,
-    address userAddress,
-    bool status
-  ) public hasAuth {
-    contractWhitelist[contractAddr].allowedAddresses[userAddress] = status;
-  }
-
-  function changeProfilationStatus(address contractAddr, bool status) public {
-    require(
-      contractWhitelist[contractAddr].contractOwner == msg.sender,
-      "Address not authorized"
-    );
-    contractWhitelist[contractAddr].profilationEnabled = status;
-  }
-
   function changeSupplyData(uint256 _maxSupply, bool _lockSupply)
     public
     hasAuth
@@ -181,25 +149,37 @@ contract PablockToken is ERC20, AccessControl, Pausable {
     lockSupply = _lockSupply;
   }
 
+  /// @notice Function to burn PTK when function is called
+  /// @param _contract Address of whitelisted contract
+  /// @param _functionSig Signature of called function
+  /// @param _addr Address of function caller
   function receiveAndBurn(
     address _contract,
     bytes4 _functionSig,
-    address addr
-  )
-    public
-    onlyWhitelisted(_contract)
-    checkProfilation(_contract)
-    returns (bool)
-  {
+    address _addr
+  ) public onlyWhitelisted(_contract) returns (bool) {
+    /**
+     * If sender contract is CONSUME || sender is contract and contract is INTERNAL
+     * burn on received address
+     * else if contract is SUBSCRIPTION and sender is allowed burn from contract address
+     * If
+     */
     if (
-      (hasRole(DEFAULT_ADMIN_ROLE, msg.sender) &&
-        contractWhitelist[_contract].subscriptionType ==
+      (contractWhitelist[_contract].subscriptionType ==
         SubscriptionType.CONSUME) ||
       (msg.sender == _contract &&
         contractWhitelist[_contract].subscriptionType ==
         SubscriptionType.INTERNAL)
     ) {
-      _burn(addr, getPrice(_contract, _functionSig) * 10**DECIMALS);
+      _burn(_addr, getPrice(_contract, _functionSig) * 10**DECIMALS);
+    } else if (
+      contractWhitelist[_contract].subscriptionType ==
+      SubscriptionType.SUBSCRIPTION
+    ) {
+      _burn(
+        contractWhitelist[_contract].contractOwner,
+        getPrice(_contract, _functionSig) * 10**DECIMALS
+      );
     }
     return true;
   }
@@ -233,6 +213,6 @@ contract PablockToken is ERC20, AccessControl, Pausable {
   }
 
   function getVersion() public pure returns (string memory) {
-    return "PablockToken version 0.2.4";
+    return "PablockToken version 0.2.5";
   }
 }

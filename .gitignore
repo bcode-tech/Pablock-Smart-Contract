@@ -11,5 +11,5 @@ artifacts
 
 *.secret
 
-ganachePrivateKeys.json
+hardhatPrivateKeys.json
 NOTES.md

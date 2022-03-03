@@ -1,79 +1,46 @@
-<!-- <img src="https://www.pablock.it/wp-content/uploads/2021/05/cropped-logoBCode_bianco-1.png" alt=""Pablock" height="40px"> -->
+# Advanced Sample Hardhat Project
 
-# Pablock-Smart-Contract
+This project demonstrates an advanced Hardhat use case, integrating other tools commonly used alongside Hardhat in the ecosystem.
 
-Implementations of Pablock Suite smazrt contracts, includes:
+The project comes with a sample contract, a test for that contract, a sample script that deploys that contract, and an example of a task implementation, which simply lists the available accounts. It also comes with a variety of other tools, preconfigured to work with the project code.
 
-- PablockToken: ERC20 Utility Token to use Pablock services.
-- PablockNFT: ERC721 token to generate custom NFT
-- PablockNotarization: Notarization contract to save file hash on blockchain
-- PablockMultiSign: Facotry to deploy multi sign contract.
-- EIP712 compatible meta transaction.
+Try running some of the following tasks:
 
-## Overview
-
-### Installation
-
-```console
-npm install git+https://github.com/bcode-tech/Pablock-Smart-Contracts
+```shell
+npx hardhat accounts
+npx hardhat compile
+npx hardhat clean
+npx hardhat test
+npx hardhat node
+npx hardhat help
+REPORT_GAS=true npx hardhat test
+npx hardhat coverage
+npx hardhat run scripts/deploy.ts
+TS_NODE_FILES=true npx ts-node scripts/deploy.ts
+npx eslint '**/*.{js,ts}'
+npx eslint '**/*.{js,ts}' --fix
+npx prettier '**/*.{json,sol,md}' --check
+npx prettier '**/*.{json,sol,md}' --write
+npx solhint 'contracts/**/*.sol'
+npx solhint 'contracts/**/*.sol' --fix
 ```
 
-or
+# Etherscan verification
 
-```console
-yarn add git+https://github.com/bcode-tech/Pablock-Smart-Contracts
+To try out Etherscan verification, you first need to deploy a contract to an Ethereum network that's supported by Etherscan, such as Ropsten.
+
+In this project, copy the .env.example file to a file named .env, and then edit it to fill in the details. Enter your Etherscan API key, your Ropsten node URL (eg from Alchemy), and the private key of the account which will send the deployment transaction. With a valid .env file in place, first deploy your contract:
+
+```shell
+hardhat run --network ropsten scripts/sample-script.ts
 ```
 
-### Usage
+Then, copy the deployment address and paste it in to replace `DEPLOYED_CONTRACT_ADDRESS` in this command:
 
-Once installed, use PablockMetaTranasactionReceiver to enable Pablock meta
-transaction on your contract.
-
-```solidity
-pragma solidity ^0.8.9;
-import "pablock-smart-contract/contract/PablockMetaTxReceiver.sol";
-
-contract MyContract is PablockMetaTxReceiver {
-  constructor(address metaTxAddress)
-    PablockMetaTxReceiver("MyContract", "0.0.1")
-  {
-    setMetaTransaction(metaTxAddress);
-  }
-}
-
+```shell
+npx hardhat verify --network ropsten DEPLOYED_CONTRACT_ADDRESS "Hello, Hardhat!"
 ```
 
-metaTxAddress rappresents the deployment address of EIP712MetaTransaction
-deployed by BCode from the Pablock ecosystem.
+# Performance optimizations
 
-## Integration
-
-To use Pablock contracts in your contract as shown above:
-
-### MUBAI
-
-For the Polygon Mumbai network:
-
-```json
-{
-  "PABLOCK_TOKEN_ADDRESS": "0x4D47A9694389B1E42403FC5152E68d8D27803b14",
-  "PABLOCK_META_TRANSACTION": "0x4419AF074BC3a6C7D90f242dfdC1a163Bc710091",
-  "PABLOCK_NOTARIZATION": "0x8344F05f33AE80f1c03C8dc8f619719AcDe8cE49",
-  "PABLOCK_NFT": "0x1cDED0caD17a03f410e6Cf3C3db003331B9341ec",
-  "PABLOCK_MULTISIGN_FACTORY": "0x7296EE0F1036eC74eCF111E676e70eE97597A7d1",
-}
-```
-
-### POLYGON
-
-For the Polygon Mainnet:
-
-```json
-{
-  "PABLOCK_TOKEN_ADDRESS":"0x284a7eF2ADD52890980E0173469FDE45d172bABD",
-  "PABLOCK_META_TRANSACTION":"0x5Dc63336bA6d4c1688E51e91fD7B002FC58C2dc9",
-  "PABLOCK_NOTARIZATION":"0xa347328B5b71eCFFcA8Da951AE2bDDa42F32066D",
-  "PABLOCK_NFT":"0x1cE38c15fD0d0242383314681D9D360663A46282",
-  "PABLOCK_MULTISIGN_FACTORY":"0xDF4FEC568B4975AE4E39AAC576143d0E86dd2e1A1",
-}
-```
+For faster runs of your tests and scripts, consider skipping ts-node's type checking by setting the environment variable `TS_NODE_TRANSPILE_ONLY` to `1` in hardhat's environment. For more details see [the documentation](https://hardhat.org/guides/typescript.html#performance-optimizations).

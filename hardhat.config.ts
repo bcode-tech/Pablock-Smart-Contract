@@ -6,7 +6,8 @@ import "@nomiclabs/hardhat-waffle";
 import "@typechain/hardhat";
 import "hardhat-gas-reporter";
 import "solidity-coverage";
-import fs from "fs";
+
+import { NetworkUserConfig } from "hardhat/types";
 
 dotenv.config();
 
@@ -20,50 +21,44 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
   }
 });
 
-const isCI = process.env.CI;
-
-let infuraKey = "";
-let maticPrivate = "";
-let mumbaiPrivate = "";
-let goerliPrivate = "";
-let ropstenPrivate = "";
-
-if (!isCI) {
-  infuraKey = fs.readFileSync(".infurakey.secret").toString().trim();
-  maticPrivate = fs.readFileSync(".matic.secret").toString().trim();
-  mumbaiPrivate = fs.readFileSync(".mumbai.secret").toString().trim();
-  goerliPrivate = fs.readFileSync(".goerli.secret").toString().trim();
-  ropstenPrivate = fs.readFileSync(".ropsten.secret").toString().trim();
-}
-
-const config: HardhatUserConfig = {
-  solidity: "0.8.9",
-  networks: {
+function getNetworks() {
+  const networks: { [any: string]: NetworkUserConfig } = {
     local: {
       url: "http://127.0.0.1:7545",
       blockGasLimit: 100000000000,
     },
-    matic: {
-      url: `https://polygon-mainnet.infura.io/v3/${infuraKey}`,
-      accounts: [maticPrivate],
-      gasPrice: 50000000000,
-    },
-    mumbai: {
-      url: `https://polygon-mumbai.infura.io/v3/${infuraKey}`,
-      accounts: [mumbaiPrivate],
-      gasPrice: 5000000000,
-    },
-    goerli: {
-      url: `https://goerli.infura.io/v3/${infuraKey}`,
-      accounts: [goerliPrivate],
-    },
-    ropsten: {
-      url: `https://ropsten.infura.io/v3/${infuraKey}`,
-      accounts: [ropstenPrivate],
-    },
-  },
+  };
+
+  if (process.env.MATIC_MAINNET_RPC && process.env.MATIC_MAINNET_PRIVATE_KEY) {
+    networks.matic = {
+      url: process.env.MATIC_MAINNET_RPC,
+      accounts: [process.env.MATIC_MAINNET_PRIVATE_KEY],
+    };
+  }
+
+  if (process.env.MATIC_MUMBAI_RPC && process.env.MATIC_MUMBAI_PRIVATE_KEY) {
+    networks.mumbai = {
+      url: process.env.MATIC_MUMBAI_RPC,
+      accounts: [process.env.MATIC_MUMBAI_PRIVATE_KEY],
+    };
+  }
+
+  if (process.env.VELAS_TESTNET_RPC && process.env.VELAS_TESTNET_PRIVATE_KEY) {
+    networks.vtestnet = {
+      url: process.env.VELAS_TESTNET_RPC,
+      accounts: [process.env.VELAS_TESTNET_PRIVATE_KEY],
+      timeout: 120000,
+    };
+  }
+
+  return networks;
+}
+
+const config: HardhatUserConfig = {
+  solidity: "0.8.9",
+  networks: getNetworks(),
   gasReporter: {
-    enabled: process.env.REPORT_GAS !== undefined,
+    enabled: !!process.env.REPORT_GAS,
     currency: "USD",
   },
   etherscan: {

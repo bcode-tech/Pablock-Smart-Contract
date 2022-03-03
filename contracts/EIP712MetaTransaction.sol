@@ -64,11 +64,7 @@ contract EIP712MetaTransaction is EIP712Base, AccessControl, Pausable {
   /**
    * CONSTRUCTOR
    */
-  constructor(
-    string memory name,
-    string memory version,
-    address _payer
-  ) EIP712Base(name, version) {
+  constructor(address _payer) EIP712Base("PablockeMetaTransaction", "0.1.0") {
     contractOwner = msgSender();
 
     _setupRole(DEFAULT_ADMIN_ROLE, msgSender());
