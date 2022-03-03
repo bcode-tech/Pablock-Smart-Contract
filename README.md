@@ -28,10 +28,10 @@ yarn add git+https://github.com/bcode-tech/Pablock-Smart-Contracts
 
 Trying to improve the contracts? Test? Deploy? Run scripts?
 
-Use a .env file based on .env.example to store private keys and other variables.
+Use a .env file based on .env.example to store private keys and other variables, if you plan to deploy or test outside the local environment.
 
 For testing meta transaction the test will need private keys of hardhat
-generated wallet. Run
+generated wallet. Run:
 
 ```console
 npx hardhat node
@@ -92,7 +92,7 @@ Contract addresses of currently deployed contracts are shown below.
 
 ### MUBAI
 
-Currently deployed contract on Mumbai Testnet refers to v1.1.4
+Currently deployed contract on Mumbai Testnet refers to v1.1.3
 
 ```json
 {
